@@ -62,12 +62,12 @@ class Client:
     remote_socket: Optional[socket.socket] = None
     auth_token: str
     channel: discord.TextChannel
-    client: Bot
+    bot_client: Bot
 
     def __init__(self, auth_token, channel, client):
         self.channel = channel
         self.auth_token = auth_token
-        self.client = client
+        self.bot_client = client
 
     def clean(self):
         self.requests = {}
@@ -78,7 +78,7 @@ class Client:
         if type(message) == str:
             asyncio.ensure_future(self.channel.send(message))
         elif type(message) == dict:
-            embed = self.client.get_embed(title=message["title"], description=message["description"])
+            embed = self.bot_client.get_embed(title=message["title"], description=message["description"])
             if "color" in message:
                 embed.colour = message["color"]
             asyncio.ensure_future(self.channel.send(embed=embed))
