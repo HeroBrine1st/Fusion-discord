@@ -117,14 +117,6 @@ class SocketHandlerThread(threading.Thread):
                 data = str(self.conn.recv(4096), encoding=encoding)
             except (ConnectionResetError, ConnectionAbortedError, ConnectionRefusedError, OSError) as e:
                 self.logger.error("%s: %s" % (type(e).__name__, e))
-                # Попытка закрытия соединения произойдет чуть ниже
-                # # noinspection PyBroadException
-                # try:
-                #     self.conn.close()
-                # except Exception as e:
-                #     self.logger.error("Error closing connection:\n%s: %s" % (type(e).__name__, e))
-                # else:
-                #     self.logger.info("Closed connection")
                 break
             if not data:
                 break
