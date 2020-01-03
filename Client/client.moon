@@ -5,6 +5,7 @@ event = require "event"
 
 properties =
     pwd: "12345678",
+    name: "ship",
     remote_address: "0.0.0.0",
     remote_port: 0,
     event_blacklist: {"internet_ready", "touch", "drag", "drop", "scroll", "redstone_changed", "key_up", "key_down", "clipboard", "chat_message"}
@@ -54,6 +55,8 @@ while conn
         if not success
             continue
         if data.error
+            if data.error == "whois"
+                conn\write json_encode(name: properties.name)
             if data.error == "need_authorization"
                 print("Authorization")
                 conn\write json_encode(auth: properties.pwd)
