@@ -171,27 +171,29 @@ class SocketHandlerThread(threading.Thread):
         self.conn.close()
 
 
-async def ship_pinger() -> None:
+async def client_pinger() -> None:
     logger = logging.Logger(app="Pinger")
     while True:
-        if connected and len(pings) < 4:
-            hsh = str(random.randint(0, 2 ** 32 - 1))
-            try:
-                remote_socket.send(jsonToBytes({"request": "ping", "hash": hsh}))
-            except OSError as e:
-                logger.error("%s: %s" % (type(e).__name__, e))
+        for client in clients.values():
+            if client.remote_socket is not None:
+                if len(client.pings) in range(3):
+                    hsh = str(random.randint(0, 2 ** 32 - 1))
+                    try:
+                        client.remote_socket.send(jsonToBytes({"request": "ping", "hash": hsh}))
+                    except OSError as e:
+                        logger.error("%s: %s" % (type(e).__name__, e))
+                    else:
+                        client.pings.append(hsh)
+                if len(client.pings) > 0:
+                    logger.warning("Ping warning: %s/4 left without response" % len(pings))
             else:
-                pings.append(hsh)
-            if len(pings) > 0:
-                logger.warning("Ping warning: %s/4 left without response" % len(pings))
-        elif len(pings) > 3:
-            logger.info("Ping failed, closing connection..")
-            try:
-                remote_socket.close()
-            except OSError as e:
-                logger.error("%s: %s" % (type(e).__name__, e))
-                logger.info("This is normal situation - remote peer already closed connection")
-        await asyncio.sleep(5)
+                logger.info("Ping failed, closing connection..")
+                try:
+                    client.remote_socket.close()
+                except OSError as e:
+                    logger.error("%s: %s" % (type(e).__name__, e))
+                    logger.info("This is normal situation - remote peer already closed connection")
+            await asyncio.sleep(5)
 
 
 class TCPListener(threading.Thread):
