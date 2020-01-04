@@ -3,6 +3,8 @@ import json
 import random
 import socket
 import threading
+import time
+
 import discord
 
 from collections import Awaitable
@@ -43,8 +45,9 @@ class RemoteRequest(asyncio.Event):
     hash: str
     result: RemoteResponse
 
-    def __init__(self, hash: str):
+    def __init__(self, cl, hash: str):
         super().__init__()
+        self.client = cl
         self.hash = hash
 
     def resolve(self, response: Union[dict, RemoteResponse]):
@@ -53,6 +56,11 @@ class RemoteRequest(asyncio.Event):
             self.result = RemoteResponse(response)
         else:
             self.result = response
+
+    def __await__(self) -> RemoteResponse:
+        self.wait()
+        del self.client.requests[self.hash]
+        return self.result
 
 
 class Client:
@@ -68,6 +76,13 @@ class Client:
         self.channel = channel
         self.auth_token = auth_token
         self.bot_client = client
+
+    def create_request(self, hash) -> RemoteRequest:
+        if hash in self.requests:
+            raise RequestObtainException
+        ev = RemoteRequest(self, hash)
+        self.requests[hash] = ev
+        return ev
 
     def clean(self):
         self.requests = {}
@@ -171,29 +186,31 @@ class SocketHandlerThread(threading.Thread):
         self.conn.close()
 
 
-async def client_pinger() -> None:
-    logger = logging.Logger(app="Pinger")
-    while True:
-        for client in clients.values():
-            if client.remote_socket is not None:
-                if len(client.pings) in range(3):
-                    hsh = str(random.randint(0, 2 ** 32 - 1))
+class ClientPinger(threading.Thread):
+    def __init__(self):
+        super().__init__(name="ClientPinger", daemon=True)
+        self.logger = logging.Logger(app="Pinger")
+
+    def start(self):
+        while True:
+            for client in clients.values():
+                if client.remote_socket is not None:
+                    if len(client.pings) in range(3):
+                        hsh = str(random.randint(0, 2 ** 32 - 1))
+                        try:
+                            client.remote_socket.send(jsonToBytes({"request": "ping", "hash": hsh}))
+                        except OSError as e:
+                            self.logger.error("%s: %s" % (type(e).__name__, e))
+                        else:
+                            client.pings.append(hsh)
+                else:
+                    self.logger.info("Ping failed, closing connection..")
                     try:
-                        client.remote_socket.send(jsonToBytes({"request": "ping", "hash": hsh}))
+                        client.remote_socket.close()
                     except OSError as e:
-                        logger.error("%s: %s" % (type(e).__name__, e))
-                    else:
-                        client.pings.append(hsh)
-                if len(client.pings) > 0:
-                    logger.warning("Ping warning: %s/4 left without response" % len(pings))
-            else:
-                logger.info("Ping failed, closing connection..")
-                try:
-                    client.remote_socket.close()
-                except OSError as e:
-                    logger.error("%s: %s" % (type(e).__name__, e))
-                    logger.info("This is normal situation - remote peer already closed connection")
-            await asyncio.sleep(5)
+                        self.logger.error("%s: %s" % (type(e).__name__, e))
+                        self.logger.info("This is normal situation - remote peer already closed connection")
+            time.sleep(5)
 
 
 class TCPListener(threading.Thread):
@@ -215,38 +232,34 @@ class TCPListener(threading.Thread):
             SocketHandlerThread(conn, addr).start()
 
 
-async def method(*args):
-    _hash = str(hash(args))
-    if not remote_socket:
+async def method(client: Client, *args):
+    if client.remote_socket is None:
         raise SocketClosedException()
-    event = asyncio.Event()
-    remote_socket.send(jsonToBytes({"hash": _hash, "request": list(args)}))
-
-    while _hash not in responses:
-        await asyncio.sleep(0.1)
-    res = responses[_hash]
-    del responses[_hash]
-    if res["error"]:
-        raise OpenComputersError(res["response"][0])
-    return res["response"]
+    _hash = str(random.randint(0, 2 ** 32 - 1))
+    while _hash in client.requests:
+        _hash = str(random.randint(0, 2 ** 32 - 1))
+    client.remote_socket.send(jsonToBytes({"hash": _hash, "request": list(args)}))
+    response: RemoteResponse = await client.create_request(_hash)
+    response.raise_if_error()
+    return response.response
 
 
-def component_method(*args) -> Awaitable:
+def component_method(client: Client, *args) -> Awaitable:
     args = ("component",) + args
-    return method(*args)
+    return method(client, *args)
 
 
 class OCMethod:
     args = ()
+    client: Client
 
-    def __init__(self, args=None):
-        if args is None:
-            args = ()
+    def __init__(self, client: Client, args=()):
+        self.client = client
         self.args = tuple(args)
 
     def __getattr__(self, item):
-        return OCMethod(args=(self.args + (item,)))
+        return OCMethod(self.client, args=(self.args + (item,)))
 
     def __call__(self, *args, **kwargs) -> Awaitable:
         oc_args = self.args + args
-        return method(*oc_args)
+        return method(self.client, *oc_args)

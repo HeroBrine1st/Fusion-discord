@@ -10,3 +10,7 @@ class OpenComputersError(Exception):
 
     def __str__(self):
         return self.error
+
+
+class RequestObtainException(Exception):
+    pass
