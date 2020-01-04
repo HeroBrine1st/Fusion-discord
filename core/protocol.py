@@ -58,7 +58,7 @@ class RemoteRequest(asyncio.Event):
 class Client:
     requests: Dict[str, RemoteRequest] = {}
     pings: list = []
-    listeners = []
+    listeners: Dict[str, list] = {}
     remote_socket: Optional[socket.socket] = None
     auth_token: str
     channel: discord.TextChannel
@@ -131,7 +131,7 @@ class SocketHandlerThread(threading.Thread):
             if self.name is None:
                 if "name" in received_data:
                     if received_data["name"] in clients:
-                        self.logger.info("this client uses service \"%s\"")
+                        self.logger.info("That client uses service \"%s\"")
                         self.name = received_data["name"]
                         self.client = clients[self.name]
                         if self.check_access():
@@ -155,11 +155,12 @@ class SocketHandlerThread(threading.Thread):
                     self.conn.send(need_auth)
                 continue
             if "ping_response" in received_data and "hash" in received_data:
-                pings.remove(received_data["hash"])
+                self.client.pings.remove(received_data["hash"])
             elif "message" in received_data:
                 self.logger.debug("Processing message from remote host")
                 self.client.process_message(received_data["message"])
-            elif "response" in received_data and "hash" in received_data:
+            elif "response" in received_data and "hash" in received_data \
+                    and received_data["hash"] in self.client.requests:
                 self.logger.debug("Response #%s received" % received_data["hash"])
                 self.client.requests[received_data["hash"]].resolve(received_data)
         if self.authorized:
@@ -175,14 +176,14 @@ async def ship_pinger() -> None:
     while True:
         if connected and len(pings) < 4:
             hsh = str(random.randint(0, 2 ** 32 - 1))
-            pings.append(hsh)
             try:
                 remote_socket.send(jsonToBytes({"request": "ping", "hash": hsh}))
             except OSError as e:
                 logger.error("%s: %s" % (type(e).__name__, e))
-                pings.remove(hsh)
+            else:
+                pings.append(hsh)
             if len(pings) > 0:
-                logger.warning("Ping warning: %s/4" % len(pings))
+                logger.warning("Ping warning: %s/4 left without response" % len(pings))
         elif len(pings) > 3:
             logger.info("Ping failed, closing connection..")
             try:

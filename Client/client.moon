@@ -57,7 +57,10 @@ while conn
         if data.error
             if data.error == "whois"
                 conn\write json_encode(name: properties.name)
-            if data.error == "need_authorization"
+            elseif data.error == "service_not_exists"
+                print("Wrong configuration: service not exists. We can connect but can't authorize.")
+                break
+            elseif data.error == "need_authorization"
                 print("Authorization")
                 conn\write json_encode(auth: properties.pwd)
             elseif data.error == "authorized_user_exists"
@@ -87,3 +90,4 @@ while conn
         if not elem_in(properties.event_blacklist, e[1])
             conn_write json_encode {"event": e}
         e = {event.pull(0)}
+conn\close!
