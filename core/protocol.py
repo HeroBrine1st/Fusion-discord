@@ -71,11 +71,13 @@ class Client:
     auth_token: str
     channel: discord.TextChannel
     bot_client: Bot
+    name: str
 
-    def __init__(self, auth_token, channel, client):
+    def __init__(self, auth_token, channel, client, name):
         self.channel = channel
         self.auth_token = auth_token
         self.bot_client = client
+        self.name = name
 
     def create_request(self, hash) -> RemoteRequest:
         if hash in self.requests:
@@ -97,6 +99,11 @@ class Client:
             if "color" in message:
                 embed.colour = message["color"]
             asyncio.ensure_future(self.channel.send(embed=embed))
+
+    def add(self):
+        if self.name in clients:
+            return
+        clients[self.name] = self
 
 
 clients: Dict[str, Client] = dict()  # name: client - позволяет иметь несколько клиентов, подключенных одновременно
@@ -263,3 +270,8 @@ class OCMethod:
     def __call__(self, *args, **kwargs) -> Awaitable:
         oc_args = self.args + args
         return method(self.client, *oc_args)
+
+
+def setup():
+    TCPListener().start()
+    ClientPinger().start()
