@@ -157,7 +157,7 @@ class SocketHandlerThread(threading.Thread):
                         self.name = received_data["name"]
                         self.client = clients[self.name]
                         if self.check_access():
-                            return
+                            break
                     else:
                         self.conn.send(nonexistent)
                 else:
@@ -166,7 +166,7 @@ class SocketHandlerThread(threading.Thread):
             if not self.authorized:
                 if "auth" in received_data and received_data["auth"] == self.client.auth_token:
                     if self.check_access():
-                        return
+                        break
                     self.authorized = True
                     self.client.remote_socket = self.conn
                     self.conn.send(jsonToBytes({"authorized": True}))
@@ -234,8 +234,7 @@ class TCPListener(threading.Thread):
         self.logger.info("Start listening %s port" % listen_port)
         while True:
             conn, addr = sock.accept()
-            # НЕТ ТУТ БЛЯДЬ ОШИБКИ, ТАМ АЙПИ + ПОРТ СУКА В TUPLE
-            # noinspection PyStringFormat
+            addr: tuple  # Пичарм: СПАСИБО МИЛ ЧЕЛОВЕК Я И НЕ ДОГАДЫВАЛСЯ ЧТО ТУТ ЕБАНЫЙ TUPLE
             self.logger.info("Connecting to %s:%s" % addr)
             SocketHandlerThread(conn, addr).start()
 
@@ -272,7 +271,6 @@ class OCMethod:
         oc_args = self.args + args
         return method(self.client, *oc_args)
 
-
-def setup():
-    TCPListener().start()
-    ClientPinger().start()
+# Сработает один раз. Не используйте importlib и все будет збс
+TCPListener().start()
+ClientPinger().start()
