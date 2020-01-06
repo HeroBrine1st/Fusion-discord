@@ -177,7 +177,8 @@ class SocketHandlerThread(threading.Thread):
                     self.conn.send(need_auth)
                 continue
             if "ping_response" in received_data and "hash" in received_data:
-                self.client.pings.remove(received_data["hash"])
+                # self.client.pings.remove(received_data["hash"])
+                self.client.pings = []
             elif "message" in received_data:
                 self.logger.debug("Processing message from remote host")
                 self.client.process_message(received_data["message"])
@@ -210,13 +211,13 @@ class ClientPinger(threading.Thread):
                             self.logger.error("%s: %s" % (type(e).__name__, e))
                         else:
                             client.pings.append(hsh)
-                else:
-                    self.logger.info("Ping failed, closing connection..")
-                    try:
-                        client.remote_socket.close()
-                    except OSError as e:
-                        self.logger.error("%s: %s" % (type(e).__name__, e))
-                        self.logger.info("This is normal situation - remote peer already closed connection")
+                    else:
+                        self.logger.info("Client %s isn't responding, closing connection.." % client.name)
+                        try:
+                            client.remote_socket.close()
+                        except OSError as e:
+                            self.logger.error("%s: %s" % (type(e).__name__, e))
+                            self.logger.info("This is normal situation - remote peer already closed connection")
             time.sleep(5)
 
 
