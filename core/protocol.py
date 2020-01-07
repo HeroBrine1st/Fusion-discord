@@ -137,7 +137,8 @@ class SocketHandlerThread(threading.Thread):
         while True:
             try:
                 data = str(self.conn.recv(4096), encoding=encoding)
-            except (ConnectionResetError, ConnectionAbortedError, ConnectionRefusedError, OSError) as e:
+            except (ConnectionResetError, ConnectionAbortedError, ConnectionRefusedError,
+                    OSError, UnicodeDecodeError) as e:
                 self.logger.error("%s: %s" % (type(e).__name__, e))
                 break
             if not data:
