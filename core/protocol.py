@@ -4,15 +4,13 @@ import random
 import socket
 import threading
 import time
-
 import discord
 
 from collections import Awaitable
 from typing import Dict, Optional, Union
-
 from core.bot import Bot
 from libraries import logger as logging
-from params import *
+from params import listen_port
 from core.exceptions import *
 
 
@@ -272,6 +270,7 @@ class OCMethod:
     def __call__(self, *args, **kwargs) -> Awaitable:
         oc_args = self.args + args
         return method(self.client, *oc_args)
+
 
 # Сработает один раз. Не используйте importlib и все будет збс
 TCPListener().start()
