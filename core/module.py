@@ -10,12 +10,15 @@ class Module:
     def __init__(self):
         if self.name == "sadkjfaskjfsajkf":
             # Что бы юзвери не пытались перехватывать с помощью try-except
-            raise BaseException("Warning: change command name.")
+            raise BaseException("Warning: change module name.")
 
     async def on_load(self, bot: Bot):
         pass
 
-    def on_unload(self):
+    async def on_unload(self):
+        pass
+
+    def on_emergency_unload(self):
         pass
 
     async def on_message(self, message: discord.Message, bot: Bot):
