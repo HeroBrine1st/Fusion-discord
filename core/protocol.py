@@ -159,6 +159,7 @@ class SocketHandlerThread(threading.Thread):
                         self.client = clients[self.name]
                         if self.check_access():
                             break
+                        self.conn.send(need_auth)
                     else:
                         self.conn.send(nonexistent)
                 else:
