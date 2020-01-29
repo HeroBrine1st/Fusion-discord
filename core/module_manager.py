@@ -1,27 +1,42 @@
 import os
 
 from typing import Dict
+
+from core.bot import Bot
 from core.command import Command
-from core.module import Module
+from core.modulebase import ModuleBase
 
 
 class ModuleManager:
-    modules: Dict[str, Module] = {}
-    commands: Dict[str, Command] = {}
+    _modules: Dict[str, ModuleBase] = {}
+    _commands: Dict[str, Command] = {}
 
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(ModuleManager, cls).__new__(cls)
         return cls.instance
 
-    def __init__(self, modules_path="Modules/"):
-        self.modules_path = modules_path
+    def __init__(self):
+        pass
 
-    def force_reload(self):
-        for module in self.modules.values():
+    def force_unload(self):
+        for module in self._modules.values():
             module.on_emergency_unload()
-        self.modules.clear()
-        self.commands.clear()
-        for file in os.listdir(self.modules_path):
-            if file.endswith(".py"):
-                pass
+        self._modules.clear()
+        self._commands.clear()
+
+    def add_module(self, m: ModuleBase):
+        self._modules[m.name] = m
+
+    def add_command(self, c: Command):
+        self._commands[c.name] = c
+
+    def initialize(self, bot: Bot):
+
+        for module in self._modules.values():
+            module.on_load(bot)
+
+
+
+
+

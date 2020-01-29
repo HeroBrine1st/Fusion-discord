@@ -1,9 +1,10 @@
 import discord
 
 from core.bot import Bot
+from core.command import Command
 
 
-class Module:
+class ModuleBase:
     name: str = "sadkjfaskjfsajkf"
     description: str = ""
 
@@ -11,6 +12,14 @@ class Module:
         if self.name == "sadkjfaskjfsajkf":
             # Что бы юзвери не пытались перехватывать с помощью try-except
             raise BaseException("Warning: change module name.")
+
+    @staticmethod
+    def register(obj):
+        from core.module_manager import ModuleManager
+        if type(obj) == Command:
+            ModuleManager().add_command(obj)
+            return True
+        return False
 
     async def on_load(self, bot: Bot):
         pass

@@ -11,6 +11,7 @@ class Command:
     description: str = ""
     arguments: str = ""  # Для пользователя. Эта переменная совершенно не влияет на вашу команду.
     permissions = {}  # Не переделывайте в списки - множества быстрее.
+    sp_permissions = {}  # Self-provided
 
     def __init__(self):
         if self.name == "sadkjfaskjfsajkf":
