@@ -1,16 +1,17 @@
 import math
 import time
-
-import discord
+import traceback
 import django
+import discord
 
-from core.bot import Bot
-from termcolor import colored
-from core.module_manager import ModuleManager
-from core.modules.BaseModule import Module as BaseModule
-from libraries.logger import Logger
-from bot.settings import *
 from django.core.management import call_command
+from termcolor import colored
+from bot.settings import *
+from core.bot import Bot
+from core.command_result import CommandResult
+from core.exceptions import *
+from core.module_manager import ModuleManager
+from libraries.logger import Logger
 
 logger = Logger(app="Core", thread="Main")
 
@@ -34,6 +35,32 @@ def load_modules_from_dir(mod_dir, ignore=None):
                 logger.log(2, "Loaded module \"%s\"" % instance.name)
 
 
+class DotDict(dict):
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+
+def parse(raw):
+    _args_0 = []
+    _keys_0 = DotDict({})
+    for elem in raw:
+        if elem.startswith("--"):
+            elem = elem[1:]
+            _key_0, _value_0 = elem, True
+            if ~elem.find("="):
+                res = args_regex.search(elem)
+                _key_0 = res.group(1)
+                _value_0 = res.group(2)
+            _keys_0[_key_0] = _value_0
+        elif elem.startswith("-"):
+            for char in elem[1:]:
+                _keys_0[char] = True
+        else:
+            _args_0.append(elem)
+    return _args_0, _keys_0
+
+
 def start():
     start_time = time.time()
     bot = Bot()
@@ -41,12 +68,12 @@ def start():
     logger.log(2, "Starting %s bot with %s %s" % (colored("Fusion", "magenta"),
                                                   colored("Discord API", "blue"),
                                                   colored("v" + discord.__version__, "green")))
-    logger.info("Loading modules from \"%s\" and \"core/modules\" directory" % modules_dir)
+    logger.info("Loading modules from \"%s\" and \"core/modules\" directories" % modules_dir)
     load_modules_from_dir("core/modules", ignore={"TemplateModule"})
     load_modules_from_dir(modules_dir)
 
     module_manager.initialize(bot)
-    logger.info("Note that modules have to add self path to params.INSTALLED_APPS when loaded.")
+    logger.info("Note that modules have to add self path in bot.settings.INSTALLED_APPS when loaded.")
     logger.info("Setting up database connection")
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bot.settings")
     django.setup()
@@ -65,5 +92,53 @@ def start():
         logger.log(2, "Loaded Modules: %s" % module_manager.modules_count)
         logger.log(2, "Loaded Commands: %s" % module_manager.commands_count)
         print("")
+
+    @bot.event
+    async def on_message(message: discord.Message):
+        for _, mod in list(module_manager.modules.items()):
+            await mod.on_message(message, bot)
+        if not message.content.startswith(cmd_prefix):
+            return
+
+        args = message.content.split()
+        cmd = args.pop(0)[len(cmd_prefix):].lower()
+
+        if cmd not in module_manager.commands:
+            await bot.send_error_embed(message.channel, "Команда \"%s\" не найдена." % cmd,
+                                       "Команда не найдена")
+
+        command = module_manager.commands[cmd]
+        if command.guild_lock and message.guild.id not in command.guild_lock:
+            await bot.send_error_embed(message.channel, "Команда \"%s\" недоступна на данном сервере." % cmd,
+                                       "Команда не найдена")
+        args_1, keys = parse(args[1:])
+        try:
+            if not module_manager.check_permissions(message.author.guild_permissions, command.permissions) \
+                    or not module_manager.check_sp_permissions(message.author.id, command.sp_permissions):
+                raise AccessDeniedException
+            result = await command.execute(message, args_1, keys)
+        except discord.Forbidden:
+            await message.add_reaction(emoji_error)
+            await bot.send_error_embed(message.channel, "У бота нет прав!")
+        except AccessDeniedException:
+            await message.add_reaction(emoji_warn)
+            await bot.send_error_embed(message.channel, "У вас недостаточно прав для выполнения данной команды",
+                                       "Нет прав!")
+        except CommandException as e:
+            await message.add_reaction(emoji_warn)
+            bot.send_error_embed(message.channel, str(e), "При обработке ввода произошла ошибка")
+        except Exception:
+            await bot.send_error_embed(message.channel, "```\n%s\n```" % traceback.format_exc(),
+                                       "⚠ Криворукий уебан, у тебя ошибка! ⚠")
+            await message.add_reaction(emoji_error)
+        else:
+            if result == CommandResult.success:
+                await message.add_reaction(emoji_ok)
+            elif result == CommandResult.arguments_insufficient:
+                embed: discord.Embed = bot.get_error_embed(title="Недостаточно аргументов!")
+                embed.add_field(name="%s%s %s" % (cmd_prefix, command.name, command.arguments),
+                                value=command.description)
+                await message.channel.send(embed=embed)
+                await message.add_reaction(emoji_warn)
 
     bot.run(os.environ.get("fusion_discord_token"))

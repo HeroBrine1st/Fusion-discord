@@ -8,6 +8,7 @@ from core.command import Command
 class ModuleBase:
     name: str = "sadkjfaskjfsajkf"
     description: str = ""
+    guild_lock: set = set()  # Айди серверов, для которых доступен данный модуль. Наследуется командами.
 
     def __init__(self):
         if self.name == "sadkjfaskjfsajkf":
@@ -18,11 +19,10 @@ class ModuleBase:
     def add_to_installed_apps(path):
         bot.settings.INSTALLED_APPS.append(path)
 
-    @staticmethod
-    def register(obj):
+    def register(self, obj):
         from core.module_manager import ModuleManager
-        if type(obj) == Command:
-            ModuleManager().add_command(obj)
+        if isinstance(obj, Command):
+            ModuleManager().add_command(obj, self)
             return True
         return False
 

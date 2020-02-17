@@ -1,4 +1,5 @@
 import os
+import re
 
 cmd_prefix = "/"
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
@@ -12,3 +13,8 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+args_regex = re.compile(r"(.*?)=(.+)")
+emoji_ok = "☑"
+emoji_error = "🛑"
+emoji_warn = "⚠"

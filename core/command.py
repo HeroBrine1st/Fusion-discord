@@ -1,17 +1,17 @@
 import discord
 
-from typing import Dict
+from typing import Dict, Set
 from core.command_result import CommandResult
 
 
-# ЭТО СУКА НАСЛЕДОВАТЬ НАДО
-# noinspection PyMethodMayBeStatic,PyUnusedLocal
 class Command:
     name: str
     description: str = ""
     arguments: str = ""  # Для пользователя. Эта переменная совершенно не влияет на вашу команду.
-    permissions = {}  # Не переделывайте в списки - множества быстрее.
-    sp_permissions = {}  # Self-provided
+    permissions: set = set()  # Не переделывайте в списки - множества быстрее.
+    sp_permissions: set = set()  # Self-provided
+    guild_lock: set = set()  # Айди серверов, для которых доступна данная команда. Всегда наследует модуль. Если пусто, открывается для всех
+    module = None
 
-    async def execute(self, message: discord.Message, args: str, keys: Dict[str, bool]) -> CommandResult:
+    async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
         return CommandResult.success
