@@ -26,6 +26,22 @@ json_error = jsonToBytes({"error": "json_decoding_failed"})
 encoding = "UTF-8"
 
 
+class OCInterface:
+    args = ()
+    client: 'Client'
+
+    def __init__(self, client: 'Client', args=()):
+        self.client = client
+        self.args = tuple(args)
+
+    def __getattr__(self, item):
+        return OCInterface(self.client, args=(self.args + (item,)))
+
+    def __call__(self, *args, **kwargs) -> Awaitable:
+        oc_args = self.args + args
+        return self.client.method(self.client, *oc_args)
+
+
 class RemoteResponse:
     response: list
     has_error: bool
@@ -102,6 +118,24 @@ class Client:
         if self.name in clients:
             return
         clients[self.name] = self
+
+    async def method(self, *args):
+        if self.remote_socket is None:
+            raise SocketClosedException()
+        _hash = str(random.randint(0, 2 ** 32 - 1))
+        while _hash in self.requests:
+            _hash = str(random.randint(0, 2 ** 32 - 1))
+        self.remote_socket.send(jsonToBytes({"hash": _hash, "request": list(args)}))
+        response: RemoteResponse = await self.create_request(_hash)
+        response.raise_if_error()
+        return response.response
+
+    def component_method(self, *args) -> Awaitable:
+        args = ("component",) + args
+        return self.method(self, *args)
+
+    def get_interface(self) -> OCInterface:
+        return OCInterface(self)
 
 
 clients: Dict[str, Client] = dict()  # name: client - позволяет иметь несколько клиентов, подключенных одновременно
@@ -237,39 +271,6 @@ class TCPListener(threading.Thread):
             addr: tuple  # Пичарм: СПАСИБО МИЛ ЧЕЛОВЕК Я И НЕ ДОГАДЫВАЛСЯ ЧТО ТУТ ЕБАНЫЙ TUPLE
             self.logger.info("Connecting to %s:%s" % addr)
             SocketHandlerThread(conn, addr).start()
-
-
-async def method(client: Client, *args):
-    if client.remote_socket is None:
-        raise SocketClosedException()
-    _hash = str(random.randint(0, 2 ** 32 - 1))
-    while _hash in client.requests:
-        _hash = str(random.randint(0, 2 ** 32 - 1))
-    client.remote_socket.send(jsonToBytes({"hash": _hash, "request": list(args)}))
-    response: RemoteResponse = await client.create_request(_hash)
-    response.raise_if_error()
-    return response.response
-
-
-def component_method(client: Client, *args) -> Awaitable:
-    args = ("component",) + args
-    return method(client, *args)
-
-
-class OCMethod:
-    args = ()
-    client: Client
-
-    def __init__(self, client: Client, args=()):
-        self.client = client
-        self.args = tuple(args)
-
-    def __getattr__(self, item):
-        return OCMethod(self.client, args=(self.args + (item,)))
-
-    def __call__(self, *args, **kwargs) -> Awaitable:
-        oc_args = self.args + args
-        return method(self.client, *oc_args)
 
 
 # Сработает один раз. Не используйте importlib и все будет збс
