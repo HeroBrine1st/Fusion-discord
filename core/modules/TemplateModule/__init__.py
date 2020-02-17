@@ -1,11 +1,10 @@
 import discord
-import bot.settings as settings
 
 from typing import Dict
 from core.bot import Bot
+from core.command import Command
 from core.command_result import CommandResult
 from core.modulebase import ModuleBase
-from core.command import Command
 
 
 class TemplateCommand(Command):
@@ -26,7 +25,7 @@ class Module(ModuleBase):
 
     def on_load(self, bot: Bot):
         self.register(TemplateCommand(bot))
-        settings.INSTALLED_APPS.append("modules.TemplateModule")
+        self.add_to_installed_apps("modules.TemplateModule")
 
     def run(self, bot: Bot):
         pass

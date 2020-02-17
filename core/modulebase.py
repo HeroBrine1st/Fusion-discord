@@ -1,4 +1,5 @@
 import discord
+import bot.settings
 
 from core.bot import Bot
 from core.command import Command
@@ -12,6 +13,10 @@ class ModuleBase:
         if self.name == "sadkjfaskjfsajkf":
             # Что бы юзвери не пытались перехватывать с помощью try-except
             raise BaseException("Warning: change module name.")
+
+    @staticmethod
+    def add_to_installed_apps(path):
+        bot.settings.INSTALLED_APPS.append(path)
 
     @staticmethod
     def register(obj):

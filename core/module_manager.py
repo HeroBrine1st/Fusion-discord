@@ -5,8 +5,8 @@ from core.modulebase import ModuleBase
 
 
 class ModuleManager:
-    _modules: Dict[str, ModuleBase] = {}
-    _commands: Dict[str, Command] = {}
+    modules: Dict[str, ModuleBase] = {}
+    commands: Dict[str, Command] = {}
 
     def __new__(cls):
         if not hasattr(cls, 'instance'):
@@ -17,29 +17,34 @@ class ModuleManager:
         pass
 
     def force_unload(self):
-        for module in self._modules.values():
+        for module in self.modules.values():
             module.on_emergency_unload()
-        self._modules.clear()
-        self._commands.clear()
+        self.modules.clear()
+        self.commands.clear()
+
+    def unload(self):
+        for module in self.modules.values():
+            module.on_unload()
+        self.commands.clear()
 
     def add_module(self, m: ModuleBase):
-        self._modules[m.name] = m
+        self.modules[m.name] = m
 
     def add_command(self, c: Command):
-        self._commands[c.name] = c
+        self.commands[c.name] = c
 
     def initialize(self, bot: Bot):
-        for module in self._modules.values():
+        for module in self.modules.values():
             module.on_load(bot)
 
     async def run_modules(self, bot: Bot):
-        for module in self._modules.values():
+        for module in self.modules.values():
             await module.run(bot)
 
     @property
     def modules_count(self):
-        return len(self._modules)
+        return len(self.modules)
 
     @property
     def commands_count(self):
-        return len(self._commands)
+        return len(self.commands)

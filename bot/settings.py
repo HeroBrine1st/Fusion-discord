@@ -1,5 +1,6 @@
 import os
 
+cmd_prefix = "/"
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 listen_port = 51413
 modules_dir = "modules"
