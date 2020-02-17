@@ -12,29 +12,39 @@ from libraries.logger import Logger
 from bot.settings import *
 from django.core.management import call_command
 
+logger = Logger(app="Core", thread="Main")
 
-def start():
-    start_time = time.time()
-    bot = Bot()
-    module_manager = ModuleManager()
-    logger = Logger(app="Core", thread="Main")
-    logger.log(2, "Starting %s bot with %s %s" % (colored("Fusion", "magenta"),
-                                                  colored("Discord API", "blue"),
-                                                  colored("v" + discord.__version__, "green")))
-    logger.info("Loading modules from \"%s\" directory" % modules_dir)
-    for file in os.listdir(modules_dir):
-        if os.path.isdir(modules_dir + "/" + file) and os.path.exists(modules_dir + "/" + file + "/__init__.py"):
-            module = __import__("%s.%s" % (modules_dir, file), globals(), locals(),
+
+def load_modules_from_dir(mod_dir, ignore=None):
+    if ignore is None:
+        ignore = {}
+    for file in os.listdir(mod_dir):
+        if file in ignore:
+            continue
+        path = mod_dir + "/" + file
+        if os.path.isdir(path) and os.path.exists(path + "/__init__.py"):
+            module = __import__(path.replace("/", "."), globals(), locals(),
                                 fromlist=["Module", "load_module"])
             do_load = True
             if hasattr(module, "load_module"):
                 do_load = module.load_module
             if do_load and hasattr(module, "Module"):
                 instance = module.Module()
-                module_manager.add_module(instance)
+                ModuleManager().add_module(instance)
                 logger.log(2, "Loaded module \"%s\"" % instance.name)
-            module_manager.add_module(BaseModule())
-            logger.log(2, "Loaded module \"BaseModule\"")
+
+
+def start():
+    start_time = time.time()
+    bot = Bot()
+    module_manager = ModuleManager()
+    logger.log(2, "Starting %s bot with %s %s" % (colored("Fusion", "magenta"),
+                                                  colored("Discord API", "blue"),
+                                                  colored("v" + discord.__version__, "green")))
+    logger.info("Loading modules from \"%s\" and \"core/modules\" directory" % modules_dir)
+    load_modules_from_dir("core/modules", ignore={"TemplateModule"})
+    load_modules_from_dir(modules_dir)
+
     module_manager.initialize(bot)
     logger.info("Note that modules have to add self path to params.INSTALLED_APPS when loaded.")
     logger.info("Setting up database connection")

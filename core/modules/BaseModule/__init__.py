@@ -1,4 +1,5 @@
 import discord
+import bot.settings as settings
 
 from typing import Dict
 from core.bot import Bot
@@ -27,3 +28,4 @@ class Module(ModuleBase):
 
     def on_load(self, bot: Bot):
         self.register(RestartCommand(bot))
+        settings.INSTALLED_APPS.append("core.modules.BaseModule")
