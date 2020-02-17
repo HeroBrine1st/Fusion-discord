@@ -1,7 +1,4 @@
-import os
-
 from typing import Dict
-
 from core.bot import Bot
 from core.command import Command
 from core.modulebase import ModuleBase
@@ -32,11 +29,9 @@ class ModuleManager:
         self._commands[c.name] = c
 
     def initialize(self, bot: Bot):
-
         for module in self._modules.values():
             module.on_load(bot)
 
-
-
-
-
+    def run_modules(self, bot: Bot):
+        for module in self._modules.values():
+            module.run(bot)

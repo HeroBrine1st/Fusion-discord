@@ -24,6 +24,9 @@ class ModuleBase:
     async def on_load(self, bot: Bot):
         pass
 
+    async def run(self, bot: Bot):
+        pass
+
     async def on_unload(self):
         pass
 
