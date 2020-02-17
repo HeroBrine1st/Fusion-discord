@@ -32,6 +32,14 @@ class ModuleManager:
         for module in self._modules.values():
             module.on_load(bot)
 
-    def run_modules(self, bot: Bot):
+    async def run_modules(self, bot: Bot):
         for module in self._modules.values():
-            module.run(bot)
+            await module.run(bot)
+
+    @property
+    def modules_count(self):
+        return len(self._modules)
+
+    @property
+    def commands_count(self):
+        return len(self._commands)

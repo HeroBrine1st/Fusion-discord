@@ -4,7 +4,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 listen_port = 51413
 modules_dir = "modules"
 INSTALLED_APPS = [
-    "core.modules.base",
+    "core.modules.BaseModule",
 ]
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASES = {

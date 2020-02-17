@@ -21,7 +21,7 @@ class ModuleBase:
             return True
         return False
 
-    async def on_load(self, bot: Bot):
+    def on_load(self, bot: Bot):
         pass
 
     async def run(self, bot: Bot):
