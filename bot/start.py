@@ -106,11 +106,13 @@ def start():
         if cmd not in module_manager.commands:
             await bot.send_error_embed(message.channel, "Команда \"%s\" не найдена." % cmd,
                                        "Команда не найдена")
+            return
 
         command = module_manager.commands[cmd]
         if command.guild_lock and message.guild.id not in command.guild_lock:
             await bot.send_error_embed(message.channel, "Команда \"%s\" недоступна на данном сервере." % cmd,
                                        "Команда не найдена")
+            return
         args_1, keys = parse(args[1:])
         try:
             if not module_manager.check_permissions(message.author.guild_permissions, command.permissions) \
