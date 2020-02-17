@@ -46,9 +46,8 @@ elem_in = (tbl, elem) ->
 
 while conn
     json_data = conn\read!
-    if json_data == ""
-        continue -- do nothing
-    elseif not json_data
+    continue if json_data == ""
+    if not json_data
         conn = internet.socket(properties.remote_address, properties.remote_port)
     else
         success, data = pcall(json.decode, json_data)

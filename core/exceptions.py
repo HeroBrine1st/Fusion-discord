@@ -14,3 +14,11 @@ class OpenComputersError(Exception):
 
 class RequestObtainException(Exception):
     pass
+
+
+class CommandException(Exception):
+    pass
+
+
+class AccessDeniedException(CommandException):
+    pass
