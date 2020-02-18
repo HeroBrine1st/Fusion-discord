@@ -81,8 +81,6 @@ def start():
                                                   colored("Discord API", "blue"),
                                                   colored("v" + discord.__version__, "green")))
     logger.info("Setting up django")
-    load_apps_from_dir("core/modules", ignore={"TemplateModule"})
-    load_apps_from_dir(modules_dir)
     django.setup()
     logger.info("Loading modules from \"%s\" and \"core/modules\" directories" % modules_dir)
     load_modules_from_dir("core/modules", ignore={"TemplateModule"})
@@ -90,8 +88,6 @@ def start():
 
     module_manager.initialize(bot)
     logger.info("Setting up django models")
-    for app in INSTALLED_APPS:
-        call_command("makemigrations", app.split(".")[-1:][0])
     call_command("migrate")
     logger.info("Connecting to discord")
 
@@ -130,7 +126,12 @@ def start():
         try:
             if not module_manager.check_permissions(message.author.guild_permissions, command.permissions) \
                     or not module_manager.check_sp_permissions(message.author.id, command.sp_permissions):
-                raise AccessDeniedException
+                embed: discord.Embed = bot.get_error_embed("У вас недостаточно прав для выполнения данной команды",
+                                                           "Нет прав!")
+                embed.add_field(name="Необходимые права:",
+                                value="\n".join(perm.name for perm in command.sp_permissions))
+                await message.channel.send(embed=embed)
+                return
             result = await command.execute(message, args_1, keys)
         except discord.Forbidden:
             await message.add_reaction(emoji_error)

@@ -1,12 +1,14 @@
 import os
 import sys
-from django.core.management import execute_from_command_line
+from django.core.management import execute_from_command_line, call_command
+from bot import settings
+from bot.start import start, load_apps_from_dir
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bot.settings")
-
+load_apps_from_dir("core/modules", ignore={"TemplateModule"})
+load_apps_from_dir(settings.modules_dir)
 command = sys.argv[1]
 if command == "runbot" or command == "runserver":
-    from bot.start import start
     start()
 elif command == "startapp":
     name = sys.argv[2]
@@ -27,5 +29,8 @@ elif command == "startapp":
     with open("core/modules/TemplateModule/models.py", "r") as f:
         with open(folder + "models.py", "w") as f2:
             f2.write(f.read())
+elif command == "custom_makemigrations":
+    for app in settings.INSTALLED_APPS:
+        call_command("makemigrations", app.split(".")[-1:][0])
 else:
     execute_from_command_line(sys.argv)
