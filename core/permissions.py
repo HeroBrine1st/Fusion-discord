@@ -7,7 +7,7 @@ class SPPermission(enum.Enum):
 
     @property
     def special_name(self):
-        return "SP." + self.name
+        return "future." + self.name
 
 
 class DiscordPermission(enum.Enum):

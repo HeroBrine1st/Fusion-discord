@@ -1,10 +1,7 @@
 import os
 import re
 
-cmd_prefix = "/"
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
-listen_port = 51413
-modules_dir = "modules"
 INSTALLED_APPS = []
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATABASES = {
@@ -14,7 +11,11 @@ DATABASES = {
     }
 }
 
+discord_token = os.environ.get("fusion_discord_token")
+listen_port = 51413
+modules_dir = "modules"
+cmd_prefix = "/"
 args_regex = re.compile(r"(.*?)=(.+)")
-emoji_ok = "☑"
-emoji_error = "🛑"
-emoji_warn = "⚠"
+emoji_ok = '✅'
+emoji_error = '🛑'
+emoji_warn = '⚠'

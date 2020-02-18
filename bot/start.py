@@ -134,6 +134,7 @@ def start():
                 embed.add_field(name="Необходимые права:",
                                 value=required_perms)
                 await message.channel.send(embed=embed)
+                await message.add_reaction(emoji_warn)
                 return
             result = await command.execute(message, args_1, keys)
         except discord.Forbidden:
@@ -160,4 +161,4 @@ def start():
                 await message.channel.send(embed=embed)
                 await message.add_reaction(emoji_warn)
 
-    bot.run(os.environ.get("fusion_discord_token"))
+    bot.run(discord_token)
