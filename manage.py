@@ -21,8 +21,8 @@ elif command == "startapp":
         print("Module \"%s\" already exists and installed." % name)
         exit(0)
     os.mkdir(folder)
-    with open("core/modules/TemplateModule/__init__.py", "r") as f:
-        with open(folder + "__init__.py", "w") as f2:
+    with open("core/modules/TemplateModule/module.py", "r") as f:
+        with open(folder + "module.py", "w") as f2:
             f2.write(f.read().replace("TemplateModule", name))
     with open("core/modules/TemplateModule/models.py", "r") as f:
         with open(folder + "models.py", "w") as f2:

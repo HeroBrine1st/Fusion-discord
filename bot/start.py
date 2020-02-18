@@ -16,6 +16,18 @@ from libraries.logger import Logger
 logger = Logger(app="Core", thread="Main")
 
 
+def load_apps_from_dir(mod_dir, ignore=None):
+    from bot.settings import INSTALLED_APPS
+    if ignore is None:
+        ignore = {}
+    for file in os.listdir(mod_dir):
+        if file in ignore:
+            continue
+        path = mod_dir + "/" + file
+        if os.path.isdir(path) and os.path.exists(path + "/module.py"):
+            INSTALLED_APPS.append(path.replace("/", "."))
+
+
 def load_modules_from_dir(mod_dir, ignore=None):
     if ignore is None:
         ignore = {}
@@ -23,9 +35,8 @@ def load_modules_from_dir(mod_dir, ignore=None):
         if file in ignore:
             continue
         path = mod_dir + "/" + file
-        if os.path.isdir(path) and os.path.exists(path + "/__init__.py"):
-            INSTALLED_APPS.append(path.replace("/", "."))
-            module = __import__(path.replace("/", "."), globals(), locals(),
+        if os.path.isdir(path) and os.path.exists(path + "/module.py"):
+            module = __import__(path.replace("/", ".") + ".module", globals(), locals(),
                                 fromlist=["Module", "load_module"])
             do_load = True
             if hasattr(module, "load_module"):
@@ -69,14 +80,16 @@ def start():
     logger.log(2, "Starting %s bot with %s %s" % (colored("Fusion", "magenta"),
                                                   colored("Discord API", "blue"),
                                                   colored("v" + discord.__version__, "green")))
+    logger.info("Setting up django")
+    load_apps_from_dir("core/modules", ignore={"TemplateModule"})
+    load_apps_from_dir(modules_dir)
+    django.setup()
     logger.info("Loading modules from \"%s\" and \"core/modules\" directories" % modules_dir)
     load_modules_from_dir("core/modules", ignore={"TemplateModule"})
     load_modules_from_dir(modules_dir)
 
     module_manager.initialize(bot)
-    logger.info("Note that modules have to add self path in bot.settings.INSTALLED_APPS when loaded.")
-    logger.info("Setting up database connection")
-    django.setup()
+    logger.info("Setting up django models")
     for app in INSTALLED_APPS:
         call_command("makemigrations", app.split(".")[-1:][0])
     call_command("migrate")
