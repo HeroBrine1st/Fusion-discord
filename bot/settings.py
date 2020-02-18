@@ -14,6 +14,7 @@ DATABASES = {
 protocol_encoding = "UTF-8"
 discord_token = os.environ.get("fusion_discord_token")
 listen_port = 51413
+owner_id = 308653925379211264
 listen_ip = ""
 modules_dir = "modules"
 cmd_prefix = "/"

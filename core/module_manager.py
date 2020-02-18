@@ -1,6 +1,8 @@
 import discord
 
 from typing import Dict, Set
+
+from bot import settings
 from core.bot import Bot
 from core.command import Command
 from core.modulebase import ModuleBase
@@ -31,6 +33,8 @@ class ModuleManager:
 
     @staticmethod
     def check_sp_permissions(member_id, perms_set: set):
+        if member_id == settings.owner_id:
+            return True
         perms_set = set(map(lambda x: x.value, perms_set))
         if sum(perms_set) == 0:
             return True
