@@ -168,7 +168,7 @@ class SocketHandlerThread(threading.Thread):
         self.conn.send(whois)
         while True:
             try:
-                data = str(self.conn.recv(4096), encoding=encoding)
+                data = str(self.conn.recv(4096), encoding=protocol_encoding)
             except (ConnectionResetError, ConnectionAbortedError, ConnectionRefusedError,
                     OSError, UnicodeDecodeError) as e:
                 self.logger.error("%s: %s" % (type(e).__name__, e))
