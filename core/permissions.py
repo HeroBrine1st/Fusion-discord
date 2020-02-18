@@ -5,6 +5,10 @@ import enum
 class SPPermission(enum.Enum):
     OWNER = 1
 
+    @property
+    def special_name(self):
+        return "SP." + self.name
+
 
 class DiscordPermission(enum.Enum):
     CREATE_INSTANT_INVITE = 0x00000001
@@ -37,3 +41,7 @@ class DiscordPermission(enum.Enum):
     MANAGE_ROLES = 0x10000000
     MANAGE_WEBHOOKS = 0x20000000
     MANAGE_EMOJIS = 0x40000000
+
+    @property
+    def special_name(self):
+        return "discord." + self.name
