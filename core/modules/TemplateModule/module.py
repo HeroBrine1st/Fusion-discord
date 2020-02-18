@@ -26,5 +26,5 @@ class Module(ModuleBase):
     def on_load(self, bot: Bot):
         self.register(TemplateCommand(bot))
 
-    def run(self, bot: Bot):
+    async def run(self, bot: Bot):
         pass
