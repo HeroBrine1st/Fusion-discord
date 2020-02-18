@@ -1,6 +1,6 @@
 import discord
 
-from typing import Dict, Set
+from typing import Dict
 from core.command_result import CommandResult
 
 

@@ -2,8 +2,8 @@ import discord
 
 
 class Bot(discord.Client):
-    def get_special_embed(self, color=0xFFFFFF, title="Эмбед") -> discord.Embed:
-        embed = discord.Embed(color=color)
+    def get_special_embed(self, color=0xFFFFFF, title="Эмбед", **kwargs) -> discord.Embed:
+        embed = discord.Embed(color=color, **kwargs)
         embed.set_author(name=title, icon_url=self.user.avatar_url)
 
         return embed
