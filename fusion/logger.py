@@ -5,7 +5,7 @@ from termcolor import colored
 # noinspection PyUnusedLocal
 class Logger:
     thread = "Main"
-    app = "core"
+    app = "fusion"
     log_levels = [
         ["Verbose", None, None, None],
         ["Debug", "green", None, None],
@@ -21,7 +21,7 @@ class Logger:
         iso = datetime.now().isoformat()
         return iso[11:19]
 
-    def __init__(self, thread="Main", app="core"):
+    def __init__(self, thread="Main", app="fusion"):
         self.queue = []
         self.running = False
         self.thread = thread

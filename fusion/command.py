@@ -1,7 +1,7 @@
 import discord
 
 from typing import Dict
-from core.command_result import CommandResult
+from fusion.command_result import CommandResult
 
 
 class Command:

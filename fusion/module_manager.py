@@ -3,10 +3,10 @@ import discord
 from typing import Dict, Set
 
 from bot import settings
-from core.bot import Bot
-from core.command import Command
-from core.modulebase import ModuleBase
-from core.permissions import DiscordPermission
+from fusion.bot import Bot
+from fusion.command import Command
+from fusion.modulebase import ModuleBase
+from fusion.permissions import DiscordPermission
 
 
 class ModuleManager:
@@ -38,7 +38,7 @@ class ModuleManager:
         perms_set = set(map(lambda x: x.value, perms_set))
         if sum(perms_set) == 0:
             return True
-        from core.modules.BaseModule.models import SPPermissions
+        from fusion.modules.BaseModule.models import SPPermissions
         try:
             perms: SPPermissions = SPPermissions.objects.get(user_id=member_id)
         except SPPermissions.DoesNotExist:

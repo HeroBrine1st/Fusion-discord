@@ -1,8 +1,8 @@
 import discord
 import bot.settings
 
-from core.bot import Bot
-from core.command import Command
+from fusion.bot import Bot
+from fusion.command import Command
 
 
 class ModuleBase:
@@ -20,7 +20,7 @@ class ModuleBase:
         bot.settings.INSTALLED_APPS.append(path)
 
     def register(self, obj):
-        from core.module_manager import ModuleManager
+        from fusion.module_manager import ModuleManager
         if isinstance(obj, Command):
             ModuleManager().add_command(obj, self)
             return True

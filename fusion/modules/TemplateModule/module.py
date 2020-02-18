@@ -1,10 +1,10 @@
 import discord
 
 from typing import Dict
-from core.bot import Bot
-from core.command import Command
-from core.command_result import CommandResult
-from core.modulebase import ModuleBase
+from fusion.bot import Bot
+from fusion.command import Command
+from fusion.command_result import CommandResult
+from fusion.modulebase import ModuleBase
 
 
 class TemplateCommand(Command):

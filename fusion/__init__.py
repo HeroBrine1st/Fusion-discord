@@ -1,12 +1,12 @@
-# For one "import core" and nothing else.
-import core.bot
-import core.command
-import core.command_result
-import core.exceptions
-import core.module_manager
-import core.modulebase
-import core.permissions
-import core.protocol
+# For one "import fusion" and nothing else.
+import fusion.bot
+import fusion.command
+import fusion.command_result
+import fusion.exceptions
+import fusion.module_manager
+import fusion.modulebase
+import fusion.permissions
+import fusion.protocol
 
 import math
 import time
@@ -17,11 +17,11 @@ import discord
 from django.core.management import call_command
 from termcolor import colored
 from bot.settings import *
-from core.bot import Bot
-from core.command_result import CommandResult
-from core.exceptions import *
-from core.module_manager import ModuleManager
-from libraries.logger import Logger
+from fusion.bot import Bot
+from fusion.command_result import CommandResult
+from fusion.exceptions import *
+from fusion.module_manager import ModuleManager
+from fusion.logger import Logger
 
 logger = Logger(app="Core", thread="Main")
 
@@ -92,8 +92,8 @@ def start():
                                                   colored("v" + discord.__version__, "green")))
     logger.info("Setting up django")
     django.setup()
-    logger.info("Loading modules from \"%s\" and \"core/modules\" directories" % modules_dir)
-    load_modules_from_dir("core/modules", ignore={"TemplateModule"})
+    logger.info("Loading modules from \"%s\" and \"fusion/modules\" directories" % modules_dir)
+    load_modules_from_dir("fusion/modules", ignore={"TemplateModule"})
     load_modules_from_dir(modules_dir)
 
     module_manager.initialize(bot)
@@ -107,7 +107,7 @@ def start():
         logger.info("Running modules..")
         await module_manager.run_modules(bot)
         logger.info("Deploying threads and starting protocol processing")
-        core.protocol.deploy()
+        fusion.protocol.deploy()
         time.sleep(0.1)  # For better logs
         print("")
         logger.log(2, "INIT FINISHED! (took %ss)" % math.floor(time.time() - start_time))
@@ -136,7 +136,7 @@ def start():
             await bot.send_error_embed(message.channel, "Команда \"%s\" недоступна на данном сервере." % cmd,
                                        "Команда не найдена")
             return
-        args_1, keys = parse(args[1:])
+
         try:
             if not module_manager.check_permissions(message.author.guild_permissions, command.permissions) \
                     or not module_manager.check_sp_permissions(message.author.id, command.sp_permissions):
@@ -150,6 +150,7 @@ def start():
                 await message.channel.send(embed=embed)
                 await message.add_reaction(emoji_warn)
                 return
+            args_1, keys = parse(args[1:])
             result = await command.execute(message, args_1, keys)
         except discord.Forbidden:
             await message.add_reaction(emoji_error)

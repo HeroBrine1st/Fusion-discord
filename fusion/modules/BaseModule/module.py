@@ -1,11 +1,11 @@
 import discord
 
 from typing import Dict
-from core.bot import Bot
-from core.command import Command
-from core.command_result import CommandResult
-from core.modulebase import ModuleBase
-from core.permissions import SPPermission  # , DiscordPermission
+from fusion.bot import Bot
+from fusion.command import Command
+from fusion.command_result import CommandResult
+from fusion.modulebase import ModuleBase
+from fusion.permissions import SPPermission  # , DiscordPermission
 
 
 class RestartCommand(Command):
@@ -18,8 +18,8 @@ class RestartCommand(Command):
         self.bot = bot
 
     async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
-        from core.module_manager import ModuleManager
-        ModuleManager().force_unload()
+        from fusion.module_manager import ModuleManager
+        await ModuleManager().unload()
         try:
             self.bot.loop.run_until_complete(self.bot.logout())
         except Exception:
