@@ -25,7 +25,6 @@ class Module(ModuleBase):
 
     def on_load(self, bot: Bot):
         self.register(TemplateCommand(bot))
-        self.add_to_installed_apps("modules.TemplateModule")
 
     def run(self, bot: Bot):
         pass

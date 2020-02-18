@@ -24,6 +24,7 @@ def load_modules_from_dir(mod_dir, ignore=None):
             continue
         path = mod_dir + "/" + file
         if os.path.isdir(path) and os.path.exists(path + "/__init__.py"):
+            INSTALLED_APPS.append(path.replace("/", "."))
             module = __import__(path.replace("/", "."), globals(), locals(),
                                 fromlist=["Module", "load_module"])
             do_load = True
@@ -75,7 +76,6 @@ def start():
     module_manager.initialize(bot)
     logger.info("Note that modules have to add self path in bot.settings.INSTALLED_APPS when loaded.")
     logger.info("Setting up database connection")
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bot.settings")
     django.setup()
     for app in INSTALLED_APPS:
         call_command("makemigrations", app.split(".")[-1:][0])

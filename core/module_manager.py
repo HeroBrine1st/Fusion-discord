@@ -1,7 +1,6 @@
-from typing import Dict
-
 import discord
 
+from typing import Dict
 from core.bot import Bot
 from core.command import Command
 from core.modulebase import ModuleBase

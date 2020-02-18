@@ -1,12 +1,12 @@
 import os
 import sys
-from bot.start import start
 from django.core.management import execute_from_command_line
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bot.settings")
 
 command = sys.argv[1]
 if command == "runbot" or command == "runserver":
+    from bot.start import start
     start()
 elif command == "startapp":
     name = sys.argv[2]

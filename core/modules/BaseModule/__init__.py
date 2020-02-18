@@ -6,7 +6,6 @@ from core.command_result import CommandResult
 from core.modulebase import ModuleBase
 from core.command import Command
 from core.permissions import Permission
-from core.module_manager import ModuleManager
 
 
 class RestartCommand(Command):
@@ -18,6 +17,7 @@ class RestartCommand(Command):
         self.bot = bot
 
     async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
+        from core.module_manager import ModuleManager
         ModuleManager().force_unload()
         try:
             self.bot.loop.run_until_complete(self.bot.logout())
@@ -32,4 +32,3 @@ class Module(ModuleBase):
 
     def on_load(self, bot: Bot):
         self.register(RestartCommand(bot))
-        self.add_to_installed_apps("core.modules.BaseModule")
