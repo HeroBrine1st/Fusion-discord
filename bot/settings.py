@@ -11,8 +11,10 @@ DATABASES = {
     }
 }
 
+protocol_encoding = "UTF-8"
 discord_token = os.environ.get("fusion_discord_token")
 listen_port = 51413
+listen_ip = ""
 modules_dir = "modules"
 cmd_prefix = "/"
 args_regex = re.compile(r"(.*?)=(.+)")

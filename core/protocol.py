@@ -10,12 +10,12 @@ from collections import Awaitable
 from typing import Dict, Optional, Union
 from core.bot import Bot
 from libraries import logger as logging
-from bot.settings import listen_port
+from bot.settings import listen_port, protocol_encoding, listen_ip
 from core.exceptions import *
 
 
 def jsonToBytes(json_data):
-    return bytes(json.dumps(json_data) + "\r\n", encoding=encoding)
+    return bytes(json.dumps(json_data) + "\r\n", encoding=protocol_encoding)
 
 
 whois = jsonToBytes({"error": "whois"})
@@ -23,7 +23,7 @@ nonexistent = jsonToBytes({"error": "service_not_exists"})
 need_auth = jsonToBytes({"error": "need_authorization"})
 auth_exist = jsonToBytes({"error": "authorized_user_exists"})
 json_error = jsonToBytes({"error": "json_decoding_failed"})
-encoding = "UTF-8"
+started = False
 
 
 class OCInterface:
@@ -233,7 +233,7 @@ class ClientPinger(threading.Thread):
         super().__init__(name="ClientPinger", daemon=True)
         self.logger = logging.Logger(app="Pinger")
 
-    def start(self):
+    def run(self):
         while True:
             for client in clients.values():
                 if client.remote_socket is not None:
@@ -263,7 +263,7 @@ class TCPListener(threading.Thread):
     def run(self) -> None:
         sock = socket.socket()
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.bind(("", listen_port))
+        sock.bind((listen_ip, listen_port))
         sock.listen()
         self.logger.info("Start listening %s port" % listen_port)
         while True:
@@ -273,6 +273,10 @@ class TCPListener(threading.Thread):
             SocketHandlerThread(conn, addr).start()
 
 
-# Сработает один раз. Не используйте importlib и все будет збс
-TCPListener().start()
-ClientPinger().start()
+def deploy():
+    global started
+    if started:
+        return
+    started = True
+    TCPListener().start()
+    ClientPinger().start()

@@ -1,3 +1,13 @@
+# For one "import core" and nothing else.
+import core.bot
+import core.command
+import core.command_result
+import core.exceptions
+import core.module_manager
+import core.modulebase
+import core.permissions
+import core.protocol
+
 import math
 import time
 import traceback
@@ -96,10 +106,14 @@ def start():
         logger.info("Logged into Discord as \"%s\"." % bot.user.name)
         logger.info("Running modules..")
         await module_manager.run_modules(bot)
+        logger.info("Deploying threads and starting protocol processing")
+        core.protocol.deploy()
+        time.sleep(0.1)  # For better logs
         print("")
         logger.log(2, "INIT FINISHED! (took %ss)" % math.floor(time.time() - start_time))
         logger.log(2, "Loaded Modules: %s" % module_manager.modules_count)
         logger.log(2, "Loaded Commands: %s" % module_manager.commands_count)
+        logger.log(2, "Listening %s:%s" % (listen_ip if listen_ip != "" else "0.0.0.0", listen_port))
         print("")
 
     @bot.event
