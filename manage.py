@@ -2,7 +2,7 @@ import os
 import sys
 from django.core.management import execute_from_command_line, call_command
 from bot import settings
-from core.core import start, load_apps_from_dir
+from core import start, load_apps_from_dir
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bot.settings")
 load_apps_from_dir("core/modules", ignore={"TemplateModule"})
