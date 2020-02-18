@@ -128,8 +128,10 @@ def start():
                     or not module_manager.check_sp_permissions(message.author.id, command.sp_permissions):
                 embed: discord.Embed = bot.get_error_embed("У вас недостаточно прав для выполнения данной команды",
                                                            "Нет прав!")
+                required_perms = "\n".join(perm for perm in command.permissions)
+                required_perms += "\n" + "\n".join("SP." + perm.name for perm in command.sp_permissions)
                 embed.add_field(name="Необходимые права:",
-                                value="\n".join(perm.name for perm in command.sp_permissions))
+                                value=required_perms)
                 await message.channel.send(embed=embed)
                 return
             result = await command.execute(message, args_1, keys)

@@ -1,9 +1,10 @@
 import discord
 
-from typing import Dict
+from typing import Dict, Set
 from core.bot import Bot
 from core.command import Command
 from core.modulebase import ModuleBase
+from core.permissions import DiscordPermission
 
 
 class ModuleManager:
@@ -19,18 +20,14 @@ class ModuleManager:
         pass
 
     @staticmethod
-    def check_permissions(member_perms: discord.Permissions, perms_set: set) -> bool:
-        if len(perms_set) < 1:
+    def check_permissions(member_perms: discord.Permissions, perms_set: Set[DiscordPermission]) -> bool:
+        perms_set = set(map(lambda x: x.value, perms_set))
+        if sum(perms_set) == 0:
             return True
 
-        member_perms_dict = {}
-
-        for k, v in iter(member_perms):
-            member_perms_dict[k] = v
-
-        for perm in perms_set:
-            if not member_perms_dict[perm]:
-                return False
+        if member_perms.value & sum(perms_set) == sum(perms_set):
+            return True
+        return False
 
     @staticmethod
     def check_sp_permissions(member_id, perms_set: set):

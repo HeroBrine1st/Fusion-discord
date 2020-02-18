@@ -2,17 +2,16 @@ import discord
 
 from typing import Dict
 from core.bot import Bot
+from core.command import Command
 from core.command_result import CommandResult
 from core.modulebase import ModuleBase
-from core.command import Command
-from core.permissions import Permission
-from .models import SPPermissions
+from core.permissions import SPPermission
 
 
 class RestartCommand(Command):
     name = "restart"
     description = "Stops bot and allow bash script to restart it"
-    sp_permissions = {Permission.OWNER}
+    sp_permissions = {SPPermission.OWNER}
 
     def __init__(self, bot: Bot):
         self.bot = bot
