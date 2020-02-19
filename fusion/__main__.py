@@ -2,8 +2,9 @@ import sys
 import os
 from pkg_resources import resource_string
 
-with open("test.txt", "w") as f:
-    f.write("test")
+# @HeroBrine1st, эта хрень работает и создает файл ровно там. откуда ее вызвали
+# with open("test.txt", "w") as f:
+#     f.write("test")
 print(sys.argv)
 
 exit(0)

@@ -2,11 +2,12 @@ import discord
 
 from typing import Dict, Set
 
-from bot import settings
+from fusion.settings import settings
 from fusion.bot import Bot
 from fusion.command import Command
 from fusion.modulebase import ModuleBase
 from fusion.permissions import DiscordPermission
+
 
 class ModuleManager:
     modules: Dict[str, ModuleBase] = {}
