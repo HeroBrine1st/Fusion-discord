@@ -8,7 +8,6 @@ from fusion.command import Command
 from fusion.modulebase import ModuleBase
 from fusion.permissions import DiscordPermission
 
-
 class ModuleManager:
     modules: Dict[str, ModuleBase] = {}
     commands: Dict[str, Command] = {}

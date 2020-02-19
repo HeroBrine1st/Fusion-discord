@@ -2,11 +2,12 @@ import os
 import sys
 from django.core.management import execute_from_command_line as efcl, call_command as call
 from bot import settings
-from fusion import start, load_apps_from_dir
+from fusion import start, load_apps_from_dir, setup
 
 
 def call_command(command, *args):
     if command == "runbot" or command == "runserver":
+        setup()
         start()
     elif command == "startapp":
         name = args[0]

@@ -1,8 +1,9 @@
 import sys
 import os
 from pkg_resources import resource_string
-import esptool
 
+with open("test.txt", "w") as f:
+    f.write("test")
 print(sys.argv)
 
 exit(0)

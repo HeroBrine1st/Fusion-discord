@@ -1,12 +1,13 @@
 # For one "import fusion" and nothing else.
 import fusion.bot
-import fusion.command
-import fusion.command_result
-import fusion.exceptions
-import fusion.module_manager
-import fusion.modulebase
-import fusion.permissions
-import fusion.protocol
+from fusion.command import Command
+from fusion.command_result import CommandResult
+from fusion.exceptions import *
+from fusion.module_manager import ModuleManager
+from fusion.modulebase import ModuleBase
+from fusion.permissions import DiscordPermission, SPPermission
+from fusion.protocol import Client
+from fusion.settings import settings
 
 import math
 import time
@@ -23,7 +24,18 @@ from fusion.exceptions import *
 from fusion.module_manager import ModuleManager
 from fusion.logger import Logger
 
+__title__ = 'Fusion Bot'
+__author__ = 'HeroBrine1st Erquilenne'
+__license__ = 'MIT'
+__version__ = '1.0'
+
 logger = Logger(app="Core", thread="Main")
+
+
+def setup():
+    settings_module = __import__(os.environ.get("FUSION_SETTINGS_MODULE"))
+    for key, value in settings_module.__dict__.items():
+        settings[key] = value
 
 
 def load_apps_from_dir(mod_dir, ignore=None):
