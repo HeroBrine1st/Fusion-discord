@@ -72,7 +72,7 @@ class RemoteRequest(asyncio.Event):
             self.result = response
 
     def __await__(self) -> RemoteResponse:
-        self.wait()
+        yield from self.wait()
         del self.client.requests[self.hash]
         return self.result
 
@@ -211,8 +211,9 @@ class SocketHandlerThread(threading.Thread):
                     self.conn.send(need_auth)
                 continue
             if "ping_response" in received_data and "hash" in received_data:
-                self.client.pings.remove(received_data["hash"])
+                # self.client.pings.remove(received_data["hash"])
                 # self.client.pings = []
+                self.client.pings.clear()
             elif "message" in received_data:
                 self.logger.debug("Processing message from remote host")
                 self.client.process_message(received_data["message"])

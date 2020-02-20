@@ -16,7 +16,8 @@ class ClientMethodCommand(Command):
             client = clients[args[0]]
         except KeyError:
             raise CommandException("Такого клиента не существует.")
-        await client.method(*args[1:])
+        result = await client.method(*args[1:])
+        await message.channel.send(str(result))
         return CommandResult.success
 
 
@@ -28,6 +29,6 @@ class Module(ModuleBase):
         self.register(ClientMethodCommand(bot))
 
     async def run(self, bot: Bot):
-        guild: discord.Guild = bot.get_guild(530374773612478475)
-        client = Client(auth_token="password", channel=guild.get_channel(680078813774086151), client=bot, name="Test")
+        guild: discord.Guild = bot.get_guild(547876610032926757)
+        client = Client(auth_token="password", channel=guild.get_channel(668454176631554049), client=bot, name="Test")
         client.add()
