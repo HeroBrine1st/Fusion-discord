@@ -19,7 +19,7 @@ class RestartCommand(Command):
 
     async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
         from core.module_manager import ModuleManager
-        ModuleManager().force_unload()
+        await ModuleManager().unload()
         try:
             self.bot.loop.run_until_complete(self.bot.logout())
         except Exception:
