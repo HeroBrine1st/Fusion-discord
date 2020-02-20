@@ -1,4 +1,6 @@
 # For one "import fusion" and nothing else.
+import os
+
 import fusion.bot
 from fusion.command import Command
 from fusion.command_result import CommandResult
@@ -17,7 +19,7 @@ import discord
 
 from django.core.management import call_command
 from termcolor import colored
-from bot.settings import *
+from fusion.settings import settings
 from fusion.bot import Bot
 from fusion.command_result import CommandResult
 from fusion.exceptions import *
@@ -83,7 +85,7 @@ def parse(raw):
             elem = elem[1:]
             _key_0, _value_0 = elem, True
             if ~elem.find("="):
-                res = args_regex.search(elem)
+                res = settings.args_regex.search(elem)
                 _key_0 = res.group(1)
                 _value_0 = res.group(2)
             _keys_0[_key_0] = _value_0
@@ -104,9 +106,12 @@ def start():
                                                   colored("v" + discord.__version__, "green")))
     logger.info("Setting up django")
     django.setup()
-    logger.info("Loading modules from \"%s\" and \"fusion/modules\" directories" % modules_dir)
-    load_modules_from_dir("fusion/modules", ignore={"TemplateModule"})
-    load_modules_from_dir(modules_dir)
+    logger.info("Loading modules")
+    # load_modules_from_dir("fusion/modules", ignore={"TemplateModule"})
+    from fusion.modules.BaseModule.module import Module as BaseModule
+    logger.log(2, "Loaded module \"BaseModule\"")
+    module_manager.add_module(BaseModule())
+    load_modules_from_dir(settings.BASE_DIR)
 
     module_manager.initialize(bot)
     logger.info("Setting up django models")
@@ -125,18 +130,19 @@ def start():
         logger.log(2, "INIT FINISHED! (took %ss)" % math.floor(time.time() - start_time))
         logger.log(2, "Loaded Modules: %s" % module_manager.modules_count)
         logger.log(2, "Loaded Commands: %s" % module_manager.commands_count)
-        logger.log(2, "Listening %s:%s" % (listen_ip if listen_ip != "" else "0.0.0.0", listen_port))
+        logger.log(2, "Listening %s:%s" % (settings.listen_ip if settings.listen_ip != "" else "0.0.0.0",
+                                           settings.listen_port))
         print("")
 
     @bot.event
     async def on_message(message: discord.Message):
         for _, mod in list(module_manager.modules.items()):
             await mod.on_message(message, bot)
-        if not message.content.startswith(cmd_prefix):
+        if not message.content.startswith(settings.cmd_prefix):
             return
 
         args = message.content.split()
-        cmd = args.pop(0)[len(cmd_prefix):].lower()
+        cmd = args.pop(0)[len(settings.cmd_prefix):].lower()
 
         if cmd not in module_manager.commands:
             await bot.send_error_embed(message.channel, "Команда \"%s\" не найдена." % cmd,
@@ -160,32 +166,32 @@ def start():
                 embed.add_field(name="Необходимые права:",
                                 value=required_perms)
                 await message.channel.send(embed=embed)
-                await message.add_reaction(emoji_warn)
+                await message.add_reaction(settings.emoji_warn)
                 return
             args_1, keys = parse(args[1:])
             result = await command.execute(message, args_1, keys)
         except discord.Forbidden:
-            await message.add_reaction(emoji_error)
+            await message.add_reaction(settings.emoji_error)
             await bot.send_error_embed(message.channel, "У бота нет прав!")
         except AccessDeniedException:
-            await message.add_reaction(emoji_warn)
+            await message.add_reaction(settings.emoji_warn)
             await bot.send_error_embed(message.channel, "У вас недостаточно прав для выполнения данной команды",
                                        "Нет прав!")
         except CommandException as e:
-            await message.add_reaction(emoji_warn)
+            await message.add_reaction(settings.emoji_warn)
             bot.send_error_embed(message.channel, str(e), "При обработке ввода произошла ошибка")
         except Exception:
             await bot.send_error_embed(message.channel, "```\n%s\n```" % traceback.format_exc(),
                                        "⚠ Криворукий уебан, у тебя ошибка! ⚠")
-            await message.add_reaction(emoji_error)
+            await message.add_reaction(settings.emoji_error)
         else:
             if result == CommandResult.success:
-                await message.add_reaction(emoji_ok)
+                await message.add_reaction(settings.emoji_ok)
             elif result == CommandResult.arguments_insufficient:
                 embed: discord.Embed = bot.get_error_embed(title="Недостаточно аргументов!")
-                embed.add_field(name="%s%s %s" % (cmd_prefix, command.name, command.arguments),
+                embed.add_field(name="%s%s %s" % (settings.cmd_prefix, command.name, command.arguments),
                                 value=command.description)
                 await message.channel.send(embed=embed)
-                await message.add_reaction(emoji_warn)
+                await message.add_reaction(settings.emoji_warn)
 
-    bot.run(discord_token)
+    bot.run(settings.discord_token)

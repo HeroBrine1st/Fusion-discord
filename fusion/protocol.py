@@ -10,12 +10,13 @@ from collections import Awaitable
 from typing import Dict, Optional, Union
 from fusion.bot import Bot
 from fusion import logger as logging
-from bot.settings import listen_port, protocol_encoding, listen_ip
+
+from fusion.settings import settings
 from fusion.exceptions import *
 
 
 def jsonToBytes(json_data):
-    return bytes(json.dumps(json_data) + "\r\n", encoding=protocol_encoding)
+    return bytes(json.dumps(json_data) + "\r\n", encoding="utf-8")
 
 
 whois = jsonToBytes({"error": "whois"})
@@ -168,7 +169,7 @@ class SocketHandlerThread(threading.Thread):
         self.conn.send(whois)
         while True:
             try:
-                data = str(self.conn.recv(4096), encoding=protocol_encoding)
+                data = str(self.conn.recv(4096), encoding="utf-8")
             except (ConnectionResetError, ConnectionAbortedError, ConnectionRefusedError,
                     OSError, UnicodeDecodeError) as e:
                 self.logger.error("%s: %s" % (type(e).__name__, e))
@@ -263,9 +264,9 @@ class TCPListener(threading.Thread):
     def run(self) -> None:
         sock = socket.socket()
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.bind((listen_ip, listen_port))
+        sock.bind((settings["listen_ip"], settings["listen_port"]))
         sock.listen()
-        self.logger.info("Start listening %s port" % listen_port)
+        self.logger.info("Start listening %s port" % settings["listen_port"])
         while True:
             conn, addr = sock.accept()
             addr: tuple  # Пичарм: СПАСИБО МИЛ ЧЕЛОВЕК Я И НЕ ДОГАДЫВАЛСЯ ЧТО ТУТ ЕБАНЫЙ TUPLE
