@@ -1,6 +1,6 @@
 from datetime import datetime
 from termcolor import colored
-from core.threading_utils import synchronized
+from core.utils import synchronized
 
 
 # noinspection PyUnusedLocal

@@ -1,5 +1,3 @@
-import json
-
 import discord
 
 from typing import Dict
@@ -12,6 +10,7 @@ from core.modulebase import ModuleBase
 from core.permissions import FuturePermission
 from core.module_manager import ModuleManager
 from django.db import connection
+from beautifultable import BeautifulTable
 
 
 class RestartCommand(Command):
@@ -44,7 +43,7 @@ class HelpCommand(Command):
             if "all" in keys or module_manager.check_permissions(message.author.guild_permissions, command.permissions) \
                     and module_manager.check_sp_permissions(message.author.id, command.future_permissions):
                 embed.add_field(name="%s%s %s" % (cmd_prefix, command.name, command.arguments),
-                                value=command.description)
+                                value=command.description, inline=False)
         await message.channel.send(embed=embed)
         return CommandResult.success
 
@@ -70,9 +69,13 @@ class SQLCommand(Command):
                 return CommandResult.success
             fields = [field[0] for field in desc]
             results = c.fetchall()
-        embed = self.bot.get_special_embed(title="Результат выполнения SQL запроса", description=" ".join(fields))
-        for i, result in enumerate(results):
-            embed.add_field(name="Результат %s" % i, value=json.dumps(result))
+        tbl = BeautifulTable()
+        tbl.column_headers = fields
+        for result in results:
+            tbl.append_row(result)
+        embed = self.bot.get_special_embed(title="Результат выполнения SQL запроса", description="```%s```" % tbl)
+        if not results:
+            embed.description = "Нет результатов."
         await message.channel.send(embed=embed)
         return CommandResult.success
 
