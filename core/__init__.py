@@ -5,7 +5,7 @@ from core.exceptions import *
 from core.module_manager import ModuleManager
 from core.modulebase import ModuleBase
 from core.permissions import DiscordPermission, FuturePermission
-from core.protocol import Client
+from core.protocol import Client, clients
 
 import core.protocol
 import math
@@ -140,7 +140,7 @@ def start():
             return
         logger.info(
             "Выполнение команды %s от %s (%s)." % (repr(message.content), str(message.author), message.author.id))
-        args_1, keys = parse(args[1:])
+        args_1, keys = parse(args)
         try:
             if not module_manager.check_permissions(message.author.guild_permissions, command.permissions) \
                     or not module_manager.check_sp_permissions(message.author.id, command.future_permissions):
