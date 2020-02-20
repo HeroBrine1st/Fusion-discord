@@ -15,10 +15,6 @@ class ModuleBase:
             # Что бы юзвери не пытались перехватывать с помощью try-except
             raise BaseException("Warning: change module name.")
 
-    @staticmethod
-    def add_to_installed_apps(path):
-        bot.settings.INSTALLED_APPS.append(path)
-
     def register(self, obj):
         from core.module_manager import ModuleManager
         if isinstance(obj, Command):

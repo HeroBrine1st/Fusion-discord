@@ -17,7 +17,12 @@ class RequestObtainException(Exception):
 
 
 class CommandException(Exception):
-    pass
+    def __init__(self, error, title="При обработке ввода произошла ошибка"):
+        self.error = error
+        self.title = title
+
+    def __str__(self):
+        return self.error
 
 
 class AccessDeniedException(CommandException):

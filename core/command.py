@@ -11,7 +11,7 @@ class Command:
     description: str = ""
     arguments: str = ""  # Для пользователя. Эта переменная совершенно не влияет на вашу команду.
     permissions: set = set()  # Не переделывайте в списки - множества быстрее.
-    sp_permissions: set = set()  # Self-provided
+    future_permissions: set = set()  # Self-provided
     guild_lock: set = set()  # Айди серверов, для которых доступна данная команда. Всегда наследует модуль. Если пусто, открывается для всех
     module = None
 

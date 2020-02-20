@@ -6,7 +6,7 @@ from bot import settings
 from core.bot import Bot
 from core.command import Command
 from core.modulebase import ModuleBase
-from core.permissions import DiscordPermission, SPPermission
+from core.permissions import DiscordPermission, FuturePermission
 from core.logger import Logger
 
 
@@ -50,7 +50,7 @@ class ModuleManager:
             return True
         # Нельзя просто так взять и вызвать один статик метод из другого
         perms = self.get_sp_permissions(member_id)
-        if perms & SPPermission.OWNER.value == SPPermission.OWNER:  # Не должно повлиять на производительность
+        if perms & FuturePermission.OWNER.value == FuturePermission.OWNER:  # Не должно повлиять на производительность
             return True
         elif perms & sum(perms_set) == sum(perms_set):
             return True
@@ -59,12 +59,14 @@ class ModuleManager:
     def force_unload(self):
         for module in self.modules.values():
             module.on_emergency_unload()
+            self.logger.info("Unloaded module \"%s\"." % module.name)
         self.modules.clear()
         self.commands.clear()
 
     async def unload(self):
         for module in self.modules.values():
             await module.on_unload()
+            self.logger.info("Unloaded module \"%s\"." % module.name)
         self.commands.clear()
 
     def add_module(self, m: ModuleBase):

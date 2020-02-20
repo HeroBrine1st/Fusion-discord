@@ -139,12 +139,12 @@ def start():
         args_1, keys = parse(args[1:])
         try:
             if not module_manager.check_permissions(message.author.guild_permissions, command.permissions) \
-                    or not module_manager.check_sp_permissions(message.author.id, command.sp_permissions):
+                    or not module_manager.check_sp_permissions(message.author.id, command.future_permissions):
                 embed: discord.Embed = bot.get_error_embed("У вас недостаточно прав для выполнения данной команды",
                                                            "Нет прав!")
                 required_perms = "\n".join(perm.special_name for perm in
                                            sorted(command.permissions, key=lambda x: x.value) +
-                                           sorted(command.sp_permissions, key=lambda x: x.value))
+                                           sorted(command.future_permissions, key=lambda x: x.value))
                 embed.add_field(name="Необходимые права:",
                                 value=required_perms)
                 await message.channel.send(embed=embed)
@@ -160,7 +160,7 @@ def start():
                                        "Нет прав!")
         except CommandException as e:
             await message.add_reaction(emoji_warn)
-            bot.send_error_embed(message.channel, str(e), "При обработке ввода произошла ошибка")
+            await bot.send_error_embed(message.channel, str(e), e.title)
         except Exception:
             await bot.send_error_embed(message.channel, "```\n%s\n```" % traceback.format_exc(),
                                        "⚠ Криворукий уебан, у тебя ошибка! ⚠")

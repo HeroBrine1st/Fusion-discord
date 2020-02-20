@@ -2,7 +2,7 @@ import enum
 
 
 # Permission number must be 2^n
-class SPPermission(enum.Enum):
+class FuturePermission(enum.Enum):
     OWNER = 1
 
     @property
