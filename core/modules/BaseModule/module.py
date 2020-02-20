@@ -5,6 +5,7 @@ from bot.settings import cmd_prefix
 from core import CommandException, CommandResult, Bot, Command, ModuleBase, FuturePermission, ModuleManager
 from django.db import connection
 from beautifultable import BeautifulTable
+from .execute import CommandExecute
 
 
 class RestartCommand(Command):
@@ -84,3 +85,4 @@ class Module(ModuleBase):
         self.register(RestartCommand(bot))
         self.register(HelpCommand(bot))
         self.register(SQLCommand(bot))
+        self.register(CommandExecute(bot))
