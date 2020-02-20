@@ -9,7 +9,7 @@ import discord
 from collections import Awaitable
 from typing import Dict, Optional, Union
 from core.bot import Bot
-from libraries import logger as logging
+from core import logger as logging
 from bot.settings import listen_port, protocol_encoding, listen_ip
 from core.exceptions import *
 

@@ -21,7 +21,7 @@ from core.bot import Bot
 from core.command_result import CommandResult
 from core.exceptions import *
 from core.module_manager import ModuleManager
-from libraries.logger import Logger
+from core.logger import Logger
 
 logger = Logger(app="Core", thread="Main")
 
