@@ -68,7 +68,7 @@ def parse(raw):
     _keys_0 = DotDict({})
     for elem in raw:
         if elem.startswith("--"):
-            elem = elem[1:]
+            elem = elem[2:]
             _key_0, _value_0 = elem, True
             if ~elem.find("="):
                 res = args_regex.search(elem)
