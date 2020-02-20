@@ -57,7 +57,7 @@ def _exec(code: str, g, l):
 
 class CommandExecute(Command):
     name = "execute"
-    desc = "Execute python code from a message"
+    description = "Execute python code from a message"
     arguments = "```Python Code```"
     future_permissions = {FuturePermission.OWNER}
 

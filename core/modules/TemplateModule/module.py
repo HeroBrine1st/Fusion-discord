@@ -11,9 +11,6 @@ class TemplateCommand(Command):
     name = "hello"
     description = "Template command"
 
-    def __init__(self, bot: Bot):
-        self.bot = bot
-
     async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
         await message.channel.send("Hello!")
         return CommandResult.success

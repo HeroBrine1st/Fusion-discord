@@ -138,7 +138,8 @@ def start():
             await bot.send_error_embed(message.channel, "Команда \"%s\" недоступна на данном сервере." % cmd,
                                        "Команда не найдена")
             return
-        logger.info("Выполнение команды %s от %s (%s)." % (message.content, str(message.author), message.author.id))
+        logger.info(
+            "Выполнение команды %s от %s (%s)." % (repr(message.content), str(message.author), message.author.id))
         args_1, keys = parse(args[1:])
         try:
             if not module_manager.check_permissions(message.author.guild_permissions, command.permissions) \
