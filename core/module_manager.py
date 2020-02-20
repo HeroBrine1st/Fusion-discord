@@ -34,20 +34,25 @@ class ModuleManager:
         return False
 
     @staticmethod
-    def check_sp_permissions(member_id, perms_set: set):
+    def get_sp_permissions(member_id):
+        from core.modules.BaseModule.models import SPPermissions
+        try:
+            perms: SPPermissions = SPPermissions.objects.get(user_id=member_id)
+        except SPPermissions.DoesNotExist:
+            return 0
+        return perms.permissions
+
+    def check_sp_permissions(self, member_id, perms_set: set):
         if member_id == settings.owner_id:
             return True
         perms_set = set(map(lambda x: x.value, perms_set))
         if sum(perms_set) == 0:
             return True
-        from core.modules.BaseModule.models import SPPermissions
-        try:
-            perms: SPPermissions = SPPermissions.objects.get(user_id=member_id)
-        except SPPermissions.DoesNotExist:
-            return False
-        if perms.permissions & SPPermission.OWNER == SPPermission.OWNER:  # Не должно повлиять на производительность
+        # Нельзя просто так взять и вызвать один статик метод из другого
+        perms = self.get_sp_permissions(member_id)
+        if perms & SPPermission.OWNER.value == SPPermission.OWNER:  # Не должно повлиять на производительность
             return True
-        elif perms.permissions & sum(perms_set) == sum(perms_set):
+        elif perms & sum(perms_set) == sum(perms_set):
             return True
         return False
 
