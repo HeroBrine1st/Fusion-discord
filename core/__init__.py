@@ -1,13 +1,13 @@
 # For one "import core" and nothing else.
-import core.bot
-import core.command
-import core.command_result
-import core.exceptions
-import core.module_manager
-import core.modulebase
-import core.permissions
-import core.protocol
+from core.command import Command
+from core.command_result import CommandResult
+from core.exceptions import *
+from core.module_manager import ModuleManager
+from core.modulebase import ModuleBase
+from core.permissions import DiscordPermission, FuturePermission
+from core.protocol import Client
 
+import core.protocol
 import math
 import time
 import traceback
@@ -98,6 +98,8 @@ def start():
 
     module_manager.initialize(bot)
     logger.info("Setting up django models")
+    for app in INSTALLED_APPS:
+        call_command("makemigrations", app.split(".")[-1:][0])
     call_command("migrate")
     logger.info("Connecting to discord")
 
@@ -136,6 +138,7 @@ def start():
             await bot.send_error_embed(message.channel, "Команда \"%s\" недоступна на данном сервере." % cmd,
                                        "Команда не найдена")
             return
+        logger.info("Выполнение команды %s от %s (%s)." % (message.content, str(message.author), message.author.id))
         args_1, keys = parse(args[1:])
         try:
             if not module_manager.check_permissions(message.author.guild_permissions, command.permissions) \
@@ -174,5 +177,25 @@ def start():
                                 value=command.description)
                 await message.channel.send(embed=embed)
                 await message.add_reaction(emoji_warn)
+
+    @bot.event
+    async def on_message_delete(message: discord.Message):
+        for _, mod in list(module_manager.modules.items()):
+            await mod.on_message_delete(message, bot)
+
+    @bot.event
+    async def on_message_edit(before: discord.Message, after: discord.Message):
+        for _, mod in list(module_manager.modules.items()):
+            await mod.on_message_edit(before, after, bot)
+
+    @bot.event
+    async def on_member_remove(member: discord.Member):
+        for _, mod in list(module_manager.modules.items()):
+            await mod.on_member_remove(member, bot)
+
+    @bot.event
+    async def on_member_join(member: discord.Member):
+        for _, mod in list(module_manager.modules.items()):
+            await mod.on_member_join(member, bot)
 
     bot.run(discord_token)

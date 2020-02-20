@@ -2,13 +2,7 @@ import discord
 
 from typing import Dict
 from bot.settings import cmd_prefix
-from core import CommandException
-from core.bot import Bot
-from core.command import Command
-from core.command_result import CommandResult
-from core.modulebase import ModuleBase
-from core.permissions import FuturePermission
-from core.module_manager import ModuleManager
+from core import CommandException, CommandResult, Bot, Command, ModuleBase, FuturePermission, ModuleManager
 from django.db import connection
 from beautifultable import BeautifulTable
 
@@ -73,9 +67,11 @@ class SQLCommand(Command):
         tbl.column_headers = fields
         for result in results:
             tbl.append_row(result)
-        embed = self.bot.get_special_embed(title="Результат выполнения SQL запроса", description="```%s```" % tbl)
+        embed = self.bot.get_special_embed(title="Результат выполнения SQL запроса", description="```%s```" % tbl,
+                                           color=0xb63a6b)
         if not results:
             embed.description = "Нет результатов."
+            embed.color = 0xFF4C4C
         await message.channel.send(embed=embed)
         return CommandResult.success
 
