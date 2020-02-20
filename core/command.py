@@ -1,7 +1,6 @@
 import discord
 
-from typing import Dict
-
+from core.utils import DotDict
 from core.bot import Bot
 from core.command_result import CommandResult
 
@@ -18,5 +17,5 @@ class Command:
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
+    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
         return CommandResult.success

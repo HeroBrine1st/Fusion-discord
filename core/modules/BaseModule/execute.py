@@ -1,8 +1,7 @@
-from typing import Dict
-
 import discord
 
 from core import Command, CommandResult, FuturePermission
+from core.utils import DotDict
 
 premade_code = """
 import io
@@ -61,7 +60,7 @@ class CommandExecute(Command):
     arguments = "```Python Code```"
     future_permissions = {FuturePermission.OWNER}
 
-    async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
+    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
         code = message.content.split("```")
         if len(code) < 3:
             return CommandResult.arguments_insufficient

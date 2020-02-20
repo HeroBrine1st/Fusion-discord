@@ -87,10 +87,10 @@ class Client:
     bot_client: Bot
     name: str
 
-    def __init__(self, auth_token, channel, client, name):
+    def __init__(self, auth_token, channel, bot_client, name):
         self.channel = channel
         self.auth_token = auth_token
-        self.bot_client = client
+        self.bot_client = bot_client
         self.name = name
 
     def create_request(self, hash) -> RemoteRequest:
@@ -128,7 +128,7 @@ class Client:
         self.remote_socket.send(jsonToBytes({"hash": _hash, "request": list(args)}))
         response: RemoteResponse = await self.create_request(_hash)
         response.raise_if_error()
-        return response.response
+        return tuple(response.response)
 
     def component_method(self, *args) -> Awaitable:
         args = ("component",) + args

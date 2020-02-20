@@ -1,5 +1,6 @@
 import os
 import re
+import bot.secure
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 INSTALLED_APPS = []
@@ -22,3 +23,12 @@ args_regex = re.compile(r"(.*?)=(.+)")
 emoji_ok = '✅'
 emoji_error = '🛑'
 emoji_warn = '⚠'
+
+protocol_clients = {
+    "default": {
+        "AUTH_TOKEN": bot.secure.default_client_token,
+        "GUILD_ID": 547876610032926757,
+        "CHANNEL_ID": 668454176631554049,
+
+    }
+}

@@ -6,6 +6,7 @@ from core.module_manager import ModuleManager
 from core.modulebase import ModuleBase
 from core.permissions import DiscordPermission, FuturePermission
 from core.protocol import Client, clients
+from core.utils import DotDict
 
 import core.protocol
 import math
@@ -57,10 +58,25 @@ def load_modules_from_dir(mod_dir, ignore=None):
                 logger.log(2, "Loaded module \"%s\"" % instance.name)
 
 
-class DotDict(dict):
-    __getattr__ = dict.get
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
+def arg_parse(arg):
+    arg = str(arg)
+    result = None
+    try:
+        result = float(arg)
+    except ValueError:
+        al = arg.lower()
+        if al == "t" or al == "true":
+            return True
+        elif al == "f" or al == "false":
+            return False
+        else:
+            return arg
+    else:
+        try:
+            result = int(arg)
+        except ValueError:
+            pass
+    return result
 
 
 def parse(raw):
@@ -74,12 +90,12 @@ def parse(raw):
                 res = args_regex.search(elem)
                 _key_0 = res.group(1)
                 _value_0 = res.group(2)
-            _keys_0[_key_0] = _value_0
+            _keys_0[_key_0] = arg_parse(_value_0)
         elif elem.startswith("-"):
             for char in elem[1:]:
                 _keys_0[char] = True
         else:
-            _args_0.append(elem)
+            _args_0.append(arg_parse(elem))
     return _args_0, _keys_0
 
 
@@ -165,6 +181,10 @@ def start():
         except CommandException as e:
             await message.add_reaction(emoji_warn)
             await bot.send_error_embed(message.channel, str(e), e.title)
+        except OpenComputersError as e:
+            await bot.send_error_embed(message.channel, "```\n%s\n```" % str(e),
+                                       "⚠ Криворукий уебан, у тебя ошибка! ⚠")
+            await message.add_reaction(emoji_error)
         except Exception:
             await bot.send_error_embed(message.channel, "```\n%s\n```" % traceback.format_exc(),
                                        "⚠ Криворукий уебан, у тебя ошибка! ⚠")

@@ -1,10 +1,8 @@
 import threading
-
 import discord
 
-from typing import Dict
 from bot.settings import cmd_prefix
-from core import CommandException, CommandResult, Bot, Command, ModuleBase, FuturePermission, ModuleManager
+from core import CommandException, CommandResult, Bot, Command, ModuleBase, FuturePermission, ModuleManager, DotDict
 from django.db import connection
 from beautifultable import BeautifulTable
 from .execute import CommandExecute
@@ -15,7 +13,7 @@ class RestartCommand(Command):
     description = "Stops bot and allow bash script to restart it"
     future_permissions = {FuturePermission.OWNER}
 
-    async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
+    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
         await ModuleManager().unload()
         try:
             self.bot.loop.run_until_complete(self.bot.logout())
@@ -29,7 +27,7 @@ class HelpCommand(Command):
     description = "Command list"
     arguments = "--all"
 
-    async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
+    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
         module_manager = ModuleManager()
         embed = self.bot.get_special_embed(title="Список%s команд" % (" доступных" if "all" not in keys else ""),
                                            description="Ваши права discord: %s\nВаши права future: %s" %
@@ -51,7 +49,7 @@ class SQLCommand(Command):
     arguments = "[query]"
     future_permissions = {FuturePermission.OWNER}
 
-    async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
+    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
         sql_query = message.content[len(cmd_prefix + self.name) + 1:]
         with connection.cursor() as c:
             try:
@@ -83,7 +81,7 @@ class ActiveThreadsCommand(Command):
     name = "threads"
     description = "Show active threads"
 
-    async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
+    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
         embed = self.bot.get_info_embed(title="Активные потоки")
         for thread in threading.enumerate():
             data = ["TID %s" % thread.ident]
