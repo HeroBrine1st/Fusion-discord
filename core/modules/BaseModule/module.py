@@ -6,6 +6,7 @@ from core.command import Command
 from core.command_result import CommandResult
 from core.modulebase import ModuleBase
 from core.permissions import SPPermission  # , DiscordPermission
+from core.module_manager import ModuleManager
 
 
 class RestartCommand(Command):
@@ -14,15 +15,21 @@ class RestartCommand(Command):
     # permissions = {DiscordPermission.ADMINISTRATOR}
     sp_permissions = {SPPermission.OWNER}
 
-    def __init__(self, bot: Bot):
-        self.bot = bot
-
     async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
-        from core.module_manager import ModuleManager
         await ModuleManager().unload()
         try:
             self.bot.loop.run_until_complete(self.bot.logout())
         except Exception:
+            pass
+        return CommandResult.success
+
+
+class HelpCommand(Command):
+    name = "help"
+    description = "Command list"
+
+    async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
+        for command in ModuleManager().commands:
             pass
         return CommandResult.success
 

@@ -6,7 +6,7 @@ from bot import settings
 from core.bot import Bot
 from core.command import Command
 from core.modulebase import ModuleBase
-from core.permissions import DiscordPermission
+from core.permissions import DiscordPermission, SPPermission
 
 
 class ModuleManager:
@@ -43,7 +43,9 @@ class ModuleManager:
             perms: SPPermissions = SPPermissions.objects.get(user_id=member_id)
         except SPPermissions.DoesNotExist:
             return False
-        if perms.permissions & sum(perms_set) == sum(perms_set):
+        if perms.permissions & SPPermission.OWNER == SPPermission.OWNER:  # Не должно повлиять на производительность
+            return True
+        elif perms.permissions & sum(perms_set) == sum(perms_set):
             return True
         return False
 
