@@ -205,7 +205,8 @@ class SocketHandlerThread(threading.Thread):
                     self.client.remote_socket = self.conn
                     self.conn.send(jsonToBytes({"authorized": True}))
                     self.client.process_message({"title": "Статус корабля",
-                                                 "description": "Подключен авторизованный корабль"})
+                                                 "description": "Подключен авторизованный корабль",
+                                                 "color": 0xFF4C4C})
                     self.logger.info("Authorized")
                 else:
                     self.conn.send(need_auth)
