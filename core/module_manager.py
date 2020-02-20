@@ -7,11 +7,13 @@ from core.bot import Bot
 from core.command import Command
 from core.modulebase import ModuleBase
 from core.permissions import DiscordPermission, SPPermission
+from core.logger import Logger
 
 
 class ModuleManager:
     modules: Dict[str, ModuleBase] = {}
     commands: Dict[str, Command] = {}
+    logger = Logger(app="Module Manager")
 
     def __new__(cls):
         if not hasattr(cls, 'instance'):

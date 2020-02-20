@@ -1,11 +1,10 @@
 from datetime import datetime
 from termcolor import colored
+from core.threading_utils import synchronized
 
 
 # noinspection PyUnusedLocal
 class Logger:
-    thread = "Main"
-    app = "core"
     log_levels = [
         ["Verbose", None, None, None],
         ["Debug", "green", None, None],
@@ -21,12 +20,12 @@ class Logger:
         iso = datetime.now().isoformat()
         return iso[11:19]
 
-    def __init__(self, thread="Main", app="core"):
-        self.queue = []
-        self.running = False
+    def __init__(self, thread="Main", app="Fusion", file=None):
         self.thread = thread
         self.app = app
+        self.file = file
 
+    @synchronized
     def raw_log(self, level: int, text: str):
         log_level = self.log_levels[level]
         _text = "[%s] [%s] [%s]: " % (

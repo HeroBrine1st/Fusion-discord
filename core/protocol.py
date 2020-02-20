@@ -23,7 +23,7 @@ nonexistent = jsonToBytes({"error": "service_not_exists"})
 need_auth = jsonToBytes({"error": "need_authorization"})
 auth_exist = jsonToBytes({"error": "authorized_user_exists"})
 json_error = jsonToBytes({"error": "json_decoding_failed"})
-started = False
+start_event = threading.Event()
 
 
 class OCInterface:
@@ -266,6 +266,7 @@ class TCPListener(threading.Thread):
         sock.bind((listen_ip, listen_port))
         sock.listen()
         self.logger.info("Start listening %s port" % listen_port)
+        start_event.set()
         while True:
             conn, addr = sock.accept()
             addr: tuple  # Пичарм: СПАСИБО МИЛ ЧЕЛОВЕК Я И НЕ ДОГАДЫВАЛСЯ ЧТО ТУТ ЕБАНЫЙ TUPLE
@@ -274,9 +275,8 @@ class TCPListener(threading.Thread):
 
 
 def deploy():
-    global started
-    if started:
+    if start_event.is_set():
         return
-    started = True
     TCPListener().start()
     ClientPinger().start()
+    start_event.wait()

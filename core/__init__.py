@@ -108,7 +108,7 @@ def start():
         await module_manager.run_modules(bot)
         logger.info("Deploying threads and starting protocol processing")
         core.protocol.deploy()
-        time.sleep(0.1)  # For better logs
+
         print("")
         logger.log(2, "INIT FINISHED! (took %ss)" % math.floor(time.time() - start_time))
         logger.log(2, "Loaded Modules: %s" % module_manager.modules_count)
