@@ -65,9 +65,6 @@ while conn
             elseif data.error == "authorized_user_exists"
                 print("Server occupied")
                 break
-            elseif data.error == "service_not_exists"
-                print("Invalid configuration: service not exists"
-                break
         elseif data.authorized == true
             print("Authorized")
         elseif data.authorized == false
