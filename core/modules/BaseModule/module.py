@@ -1,3 +1,5 @@
+import threading
+
 import discord
 
 from typing import Dict
@@ -77,6 +79,23 @@ class SQLCommand(Command):
         return CommandResult.success
 
 
+class ActiveThreadsCommand(Command):
+    name = "threads"
+    description = "Show active threads"
+
+    async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
+        embed = self.bot.get_info_embed(title="Активные потоки")
+        for thread in threading.enumerate():
+            data = ["TID %s" % thread.ident]
+            if thread.isDaemon():
+                data.append("Daemon")
+            if thread.isAlive():
+                data.append("Alive")
+            embed.add_field(name=thread.name, value=", ".join(data))
+        await message.channel.send(embed=embed)
+        return CommandResult.success
+
+
 class Module(ModuleBase):
     name = "BaseModule"
     description = "Basic module for minimal functionality"
@@ -86,3 +105,4 @@ class Module(ModuleBase):
         self.register(HelpCommand(bot))
         self.register(SQLCommand(bot))
         self.register(CommandExecute(bot))
+        self.register(ActiveThreadsCommand(bot))

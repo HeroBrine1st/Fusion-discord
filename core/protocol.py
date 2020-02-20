@@ -107,12 +107,12 @@ class Client:
 
     def process_message(self, message: Union[dict, str]):
         if type(message) == str:
-            asyncio.ensure_future(self.channel.send(message))
+            asyncio.run_coroutine_threadsafe(self.channel.send(message), self.bot_client.loop)
         elif type(message) == dict:
             embed = self.bot_client.get_embed(title=message["title"], description=message["description"])
             if "color" in message:
                 embed.colour = message["color"]
-            asyncio.ensure_future(self.channel.send(embed=embed))
+            asyncio.run_coroutine_threadsafe(self.channel.send(embed=embed), self.bot_client.loop)
 
     def add(self):
         if self.name in clients:
@@ -186,7 +186,7 @@ class SocketHandlerThread(threading.Thread):
             if self.name is None:
                 if "name" in received_data:
                     if received_data["name"] in clients:
-                        self.logger.info("That client uses service \"%s\"")
+                        self.logger.info("That client uses service \"%s\"" % received_data["name"])
                         self.name = received_data["name"]
                         self.client = clients[self.name]
                         if self.check_access():
@@ -211,8 +211,8 @@ class SocketHandlerThread(threading.Thread):
                     self.conn.send(need_auth)
                 continue
             if "ping_response" in received_data and "hash" in received_data:
-                # self.client.pings.remove(received_data["hash"])
-                self.client.pings = []
+                self.client.pings.remove(received_data["hash"])
+                # self.client.pings = []
             elif "message" in received_data:
                 self.logger.debug("Processing message from remote host")
                 self.client.process_message(received_data["message"])
@@ -246,9 +246,12 @@ class ClientPinger(threading.Thread):
                         else:
                             client.pings.append(hsh)
                     else:
+                        print(client.pings)
                         self.logger.info("Client %s isn't responding, closing connection.." % client.name)
                         try:
                             client.remote_socket.close()
+                            client.remote_socket = None
+                            client.clean()
                         except OSError as e:
                             self.logger.error("%s: %s" % (type(e).__name__, e))
                             self.logger.info("This is normal situation - remote peer already closed connection")
