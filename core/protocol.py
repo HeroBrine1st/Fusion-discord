@@ -206,7 +206,7 @@ class SocketHandlerThread(threading.Thread):
                     self.conn.send(jsonToBytes({"authorized": True}))
                     self.client.process_message({"title": "Статус корабля",
                                                  "description": "Подключен авторизованный корабль",
-                                                 "color": 0xFF4C4C})
+                                                 "color": 0x6AAF6A})
                     self.logger.info("Authorized")
                 else:
                     self.conn.send(need_auth)
