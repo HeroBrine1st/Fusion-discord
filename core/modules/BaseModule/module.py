@@ -94,6 +94,18 @@ class ActiveThreadsCommand(Command):
         return CommandResult.success
 
 
+class DebugArgsCommand(Command):
+    name = "argsdbg"
+    description = "Debug arguments parsing"
+
+    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
+        embed = self.bot.get_info_embed(title="Результаты разбора аргументов")
+        embed.add_field(name="Args", value=args)
+        embed.add_field(name="Kwargs", value=keys)
+        await message.channel.send(embed=embed)
+        return CommandResult.success
+
+
 class Module(ModuleBase):
     name = "BaseModule"
     description = "Basic module for minimal functionality"

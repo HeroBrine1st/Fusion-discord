@@ -7,7 +7,7 @@ from bot import settings
 class ClientMethodCommand(Command):
     name = "clraw"
     description = "Послать запрос клиенту протокола. This is debug feature."
-    arguments = "<client> <method...>"
+    arguments = "<method...> --client=default"
     future_permissions = {FuturePermission.OWNER}
 
     async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:

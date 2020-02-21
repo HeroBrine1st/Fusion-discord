@@ -27,3 +27,7 @@ class CommandException(Exception):
 
 class AccessDeniedException(CommandException):
     pass
+
+
+class ParseError(Exception):
+    pass
