@@ -1,5 +1,5 @@
 import discord
-from core import ModuleBase, CommandResult, Command, Bot, DotDict
+from core import ModuleBase, CommandResult, Command, Bot, DotDict, EventListener
 
 
 class TemplateCommand(Command):
@@ -15,8 +15,10 @@ class Module(ModuleBase):
     name = "TemplateModule"
     description = "Module TemplateModule"
 
+    @EventListener
     def on_load(self, bot: Bot):
         self.register(TemplateCommand(bot))
 
+    @EventListener
     async def run(self, bot: Bot):
         pass

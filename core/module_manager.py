@@ -78,11 +78,11 @@ class ModuleManager:
         self.commands[c.name] = c
 
     def initialize(self, bot: Bot):
-        for module in self.modules.values():
+        for module in sorted(self.modules.values(), key=lambda x: x.on_load.priority):
             module.on_load(bot)
 
     async def run_modules(self, bot: Bot):
-        for module in self.modules.values():
+        for module in sorted(self.modules.values(), key=lambda x: x.run.priority):
             await module.run(bot)
 
     @property

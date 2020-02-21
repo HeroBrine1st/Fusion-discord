@@ -2,7 +2,8 @@ import threading
 import discord
 
 from bot.settings import cmd_prefix
-from core import CommandException, CommandResult, Bot, Command, ModuleBase, FuturePermission, ModuleManager, DotDict
+from core import CommandException, CommandResult, Bot, Command, ModuleBase, FuturePermission, ModuleManager, DotDict, \
+    EventListener
 from django.db import connection
 from beautifultable import BeautifulTable
 from .execute import CommandExecute
@@ -110,6 +111,7 @@ class Module(ModuleBase):
     name = "BaseModule"
     description = "Basic module for minimal functionality"
 
+    @EventListener
     def on_load(self, bot: Bot):
         self.register(RestartCommand(bot))
         self.register(HelpCommand(bot))

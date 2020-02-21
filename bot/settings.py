@@ -24,7 +24,7 @@ emoji_ok = '✅'
 emoji_error = '🛑'
 emoji_warn = '⚠'
 
-protocol_clients = {
+protocol_services = {
     "default": {
         "AUTH_TOKEN": bot.secure.default_client_token,
         "GUILD_ID": 547876610032926757,

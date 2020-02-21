@@ -1,6 +1,7 @@
 import discord
 
-from core import ModuleBase, CommandResult, Command, Bot, Client, clients, CommandException, FuturePermission, DotDict
+from core import ModuleBase, CommandResult, Command, Bot, Client, clients, CommandException, FuturePermission, DotDict, \
+    Logger, EventListener
 from bot import settings
 
 
@@ -30,15 +31,19 @@ class ClientMethodCommand(Command):
 class Module(ModuleBase):
     name = "ProtocolModule"
     description = "Взаимодействие с клиентами протокола."
+    logger = Logger(app="ProtocolModule")
 
+    @EventListener
     def on_load(self, bot: Bot):
         self.register(ClientMethodCommand(bot))
 
+    @EventListener
     async def run(self, bot: Bot):
-        for client_name in settings.protocol_clients:
-            client_config = settings.protocol_clients[client_name]
+        for service_name in settings.protocol_services:
+            self.logger.info("Creating service %s." % service_name)
+            client_config = settings.protocol_services[service_name]
             chnl = bot.get_guild(client_config["GUILD_ID"])
             client = Client(auth_token=client_config["AUTH_TOKEN"],
                             channel=chnl.get_channel(client_config["CHANNEL_ID"]),
-                            bot_client=bot, name=client_name)
+                            bot_client=bot, name=service_name)
             client.add()

@@ -59,11 +59,11 @@ def parse_quotes(value, raw):
     return i, value
 
 
-def parse(raw):
+def parse(raw):  # Огромный (во всех смыслах) костыль. Нужно отрефакторить на регексы
     args = []
     kwargs = DotDict()
     skip = -1
-    if (" ".join(raw).count("\"") - " ".join(raw).count("\\\"")) & 1 == 1:  # Verify that quote count is 2n
+    if quote_count(" ".join(raw)) & 1 == 1:  # Verify that quote count is 2n
         raise ParseError("Unclosed quote")
     for i, elem in enumerate(raw):
         if i <= skip:

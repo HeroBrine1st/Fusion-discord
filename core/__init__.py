@@ -7,6 +7,7 @@ from core.modulebase import ModuleBase
 from core.permissions import DiscordPermission, FuturePermission
 from core.protocol import Client, clients
 from core.utils import DotDict, parse
+from core.event_listener import EventListener
 
 import core.protocol
 import math
