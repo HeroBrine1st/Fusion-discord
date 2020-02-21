@@ -1,7 +1,7 @@
 import discord
 
 from core import ModuleBase, CommandResult, Command, Bot, Client, clients, CommandException, FuturePermission, DotDict, \
-    Logger, EventListener
+    Logger, EventListener, Priority
 from bot import settings
 
 
@@ -28,6 +28,11 @@ class ClientMethodCommand(Command):
         return CommandResult.success
 
 
+class ClientsCommand(Command):
+    name = "clients"
+    description = "Список клиентов"
+
+
 class Module(ModuleBase):
     name = "ProtocolModule"
     description = "Взаимодействие с клиентами протокола."
@@ -37,7 +42,7 @@ class Module(ModuleBase):
     def on_load(self, bot: Bot):
         self.register(ClientMethodCommand(bot))
 
-    @EventListener
+    @EventListener(priority=Priority.HIGH)
     async def run(self, bot: Bot):
         for service_name in settings.protocol_services:
             self.logger.info("Creating service %s." % service_name)

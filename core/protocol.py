@@ -204,8 +204,9 @@ class SocketHandlerThread(threading.Thread):
                     self.authorized = True
                     self.client.remote_socket = self.conn
                     self.conn.send(jsonToBytes({"authorized": True}))
-                    self.client.process_message({"title": "Статус корабля",
-                                                 "description": "Подключен авторизованный корабль",
+                    self.client.process_message({"title": "Сервисные сообщения протокола",
+                                                 "description": "Клиент %s:%s подключился к сервису %s." %
+                                                                (self.addr[0], self.addr[1], self.name),
                                                  "color": 0x6AAF6A})
                     self.logger.info("Authorized")
                 else:
@@ -223,9 +224,10 @@ class SocketHandlerThread(threading.Thread):
                 self.logger.debug("Response #%s received" % received_data["hash"])
                 self.client.requests[received_data["hash"]].resolve(received_data)
         if self.authorized:
-            self.client.process_message({"title": "Статус корабля",
-                                         "description": "Авторизованный корабль отключен",
-                                         "color": 0xFF4C4C})
+            self.client.process_message({"title": "Сервисные сообщения протокола",
+                                         "description": "Клиент %s:%s отключился от сервиса %s." %
+                                                        (self.addr[0], self.addr[1], self.name),
+                                         "color": 0x6AAF6A})
             self.client.clean()
         self.conn.close()
 

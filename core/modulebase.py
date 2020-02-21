@@ -1,5 +1,4 @@
 import discord
-import bot.settings
 
 from core.bot import Bot
 from core.command import Command

@@ -7,7 +7,7 @@ from core.modulebase import ModuleBase
 from core.permissions import DiscordPermission, FuturePermission
 from core.protocol import Client, clients
 from core.utils import DotDict, parse
-from core.event_listener import EventListener
+from core.event_listener import EventListener, Priority
 
 import core.protocol
 import math
@@ -96,7 +96,7 @@ def start():
 
     @bot.event
     async def on_message(message: discord.Message):
-        for _, mod in list(module_manager.modules.items()):
+        for mod in sorted(module_manager.modules.values(), key=lambda x: x.on_message.priority):
             await mod.on_message(message, bot)
         if not message.content.startswith(cmd_prefix):
             return

@@ -1,14 +1,19 @@
-class EventListener:
-    def __new__(cls, func):
-        if callable(func):
-            func.priority = 0
-            return func
-        else:
-            return cls
+import enum
 
-    def __init__(self, priority=0):
-        self.priority = priority
 
-    def __call__(self, func):
-        func.priority = self.priority
+class Priority(enum.Enum):
+    LOW = -10
+    NORMAL = 0
+    HIGH = 10
+
+
+def EventListener(func=None, priority=Priority.NORMAL):
+    if callable(func):
+        func.priority = priority.value
         return func
+    else:
+        def decorator(func):
+            func.priority = priority.value
+            return func
+
+        return decorator
