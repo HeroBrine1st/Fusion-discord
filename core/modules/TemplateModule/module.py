@@ -1,14 +1,12 @@
 import discord
-
-from typing import Dict
-from core import ModuleBase, CommandResult, Command, Bot
+from core import ModuleBase, CommandResult, Command, Bot, DotDict
 
 
 class TemplateCommand(Command):
     name = "hello"
     description = "Template command"
 
-    async def execute(self, message: discord.Message, args: list, keys: Dict[str, bool]) -> CommandResult:
+    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
         await message.channel.send("Hello!")
         return CommandResult.success
 
