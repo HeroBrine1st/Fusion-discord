@@ -116,3 +116,4 @@ class Module(ModuleBase):
         self.register(SQLCommand(bot))
         self.register(CommandExecute(bot))
         self.register(ActiveThreadsCommand(bot))
+        self.register(DebugArgsCommand(bot))
