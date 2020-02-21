@@ -40,18 +40,22 @@ def arg_parse(arg):
     return result
 
 
+def quote_count(value):
+    return value.count("\"") - value.count("\\\"")
+
+
 def parse_quotes(value, raw):
     if len(raw) == 0:
-        raise ParseError("Unclosed quote")
+        raise ParseError("Unclosed quote len(raw) == 0")
     i = 0
     for i, elem in enumerate(raw):
         value += " " + elem
-        if elem.count("\"") == 1 and elem.endswith("\""):
+        if quote_count(elem) == 1 and elem.endswith("\"") and not elem.endswith("\\\""):
             break
-        elif elem.count("\"") > 0:
-            raise ParseError("Unclosed quote")
+        elif quote_count(elem) > 0:
+            raise ParseError("Unclosed quote quote_count > 0 (%s) " % quote_count(elem))
     if not value.endswith("\""):
-        raise ParseError("Unclosed quote")
+        raise ParseError("Unclosed quote not end_with \" ")
     return i, value
 
 
@@ -59,8 +63,8 @@ def parse(raw):
     args = []
     kwargs = DotDict()
     skip = -1
-    if " ".join(raw).count("\"") & 1 == 1:  # Verify that quote count is 2n
-        raise ParseError("Unclosed quote")
+    if (" ".join(raw).count("\"") - " ".join(raw).count("\\\"")) & 1 == 1:  # Verify that quote count is 2n
+        raise ParseError("Unclosed quote validation error")
     for i, elem in enumerate(raw):
         if i <= skip:
             continue
@@ -72,11 +76,11 @@ def parse(raw):
                 key = res.group(1)
                 value = res.group(2)
                 if value.startswith("\""):
-                    if value.count("\"") == 1:
+                    if quote_count(value) == 1:
                         skip_1, parsed = parse_quotes(value, raw[i + 1:])
                         skip = i + skip_1 + 1
                         value = parsed[1:-1]
-                    elif value.endswith("\""):
+                    elif value.endswith("\"") and not value.endswith("\\\""):
                         value = value[1:-1]
             kwargs[key] = arg_parse(value)
         elif elem.startswith("-"):
@@ -86,11 +90,11 @@ def parse(raw):
                 kwargs[char] = True
         else:
             if elem.startswith("\""):
-                if elem.count("\"") == 1:
+                if quote_count(elem) == 1:
                     skip_1, parsed = parse_quotes(elem, raw[i + 1:])
                     skip = i + skip_1 + 1
                     elem = parsed[1:-1]
-                elif elem.endswith("\""):
+                elif elem.endswith("\"") and not elem.endswith("\\\""):
                     elem = elem[1:-1]
             args.append(arg_parse(elem))
     return args, kwargs
