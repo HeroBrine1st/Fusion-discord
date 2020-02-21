@@ -46,16 +46,16 @@ def quote_count(value):
 
 def parse_quotes(value, raw):
     if len(raw) == 0:
-        raise ParseError("Unclosed quote len(raw) == 0")
+        raise ParseError("Unclosed quote")
     i = 0
     for i, elem in enumerate(raw):
         value += " " + elem
         if quote_count(elem) == 1 and elem.endswith("\"") and not elem.endswith("\\\""):
             break
         elif quote_count(elem) > 0:
-            raise ParseError("Unclosed quote quote_count > 0 (%s) " % quote_count(elem))
+            raise ParseError("Unclosed quote")
     if not value.endswith("\""):
-        raise ParseError("Unclosed quote not end_with \" ")
+        raise ParseError("Unclosed quote")
     return i, value
 
 
@@ -64,7 +64,7 @@ def parse(raw):
     kwargs = DotDict()
     skip = -1
     if (" ".join(raw).count("\"") - " ".join(raw).count("\\\"")) & 1 == 1:  # Verify that quote count is 2n
-        raise ParseError("Unclosed quote validation error")
+        raise ParseError("Unclosed quote")
     for i, elem in enumerate(raw):
         if i <= skip:
             continue
