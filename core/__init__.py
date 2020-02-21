@@ -100,6 +100,8 @@ def start():
         if not message.content.startswith(cmd_prefix):
             return
 
+        if message.author.bot:
+            return
         args = message.content.split()
         cmd = args.pop(0)[len(cmd_prefix):].lower()
 
