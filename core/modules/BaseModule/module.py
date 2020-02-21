@@ -7,6 +7,7 @@ from core import CommandException, CommandResult, Bot, Command, ModuleBase, Futu
 from django.db import connection
 from beautifultable import BeautifulTable
 from .execute import CommandExecute
+from .models import SPPermissions
 
 
 class RestartCommand(Command):
@@ -107,6 +108,76 @@ class DebugArgsCommand(Command):
         return CommandResult.success
 
 
+class PermissionsCommand(Command):
+    name = "permissions"
+    description = "Permission managing"
+    arguments = "[add/remove] <permission> <mentions...>"
+    future_permissions = {FuturePermission.OWNER}
+
+    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
+        if len(args) < 2:
+            return CommandResult.arguments_insufficient
+        if args[0] == "add":
+            perm = args[1]
+            try:
+                perm = FuturePermission[perm.upper()]
+            except KeyError:
+                raise CommandException("Permission \"%s\" don't exists." % perm.upper())
+            embed = self.bot.get_ok_embed(title="Установка прав")
+            success = 0
+            failure = 0
+            for mention in message.mentions:
+                perms = ModuleManager().get_sp_permissions(mention.id)
+                if perms & perm.value == perm.value:
+                    embed.add_field(name="Установка разрешения %s пользователю %s не удалась." % (perm, str(mention)),
+                                    value="Он уже имеет такое разрешение")
+                    failure += 1
+                else:
+                    try:
+                        db_perms: SPPermissions = SPPermissions.objects.get(user_id=mention.id)
+                    except SPPermissions.DoesNotExist:
+                        db_perms: SPPermissions = SPPermissions()
+                        db_perms.user_id = mention.id
+                    db_perms.permissions |= perm.value
+                    db_perms.save()
+                    embed.add_field(name="%s - успешно" % str(mention),
+                                    value="Текущие права: %s" % bin(db_perms.permissions))
+                    success += 1
+            embed.description = "%s успешно\n%s с ошибками" % (success, failure)
+            await message.channel.send(embed=embed)
+        elif args[0] == "remove":
+            perm = args[1]
+            try:
+                perm = FuturePermission[perm.upper()]
+            except KeyError:
+                raise CommandException("Permission \"%s\" don't exists." % perm.upper())
+            embed = self.bot.get_ok_embed(title="Удаление прав")
+            success = 0
+            failure = 0
+            for mention in message.mentions:
+                perms = ModuleManager().get_sp_permissions(mention.id)
+                if perms & perm.value != perm.value:
+                    embed.add_field(name="Удаление разрешения %s у пользователя %s невозможно." % (perm, str(mention)),
+                                    value="Он не имеет такого разрешения.")
+                    failure += 1
+                else:
+                    try:
+                        db_perms: SPPermissions = SPPermissions.objects.get(user_id=mention.id)
+                    except SPPermissions.DoesNotExist:
+                        db_perms: SPPermissions = SPPermissions()
+                        db_perms.user_id = mention.id
+                    db_perms.permissions ^= perm.value
+                    db_perms.save()
+                    embed.add_field(name="%s - успешно" % str(mention),
+                                    value="Текущие права: %s" % bin(db_perms.permissions))
+                    success += 1
+            embed.description = "%s успешно\n%s с ошибками" % (success, failure)
+            await message.channel.send(embed=embed)
+        else:
+            return CommandResult.arguments_insufficient
+        return CommandResult.success
+
+
 class Module(ModuleBase):
     name = "BaseModule"
     description = "Basic module for minimal functionality"
@@ -119,3 +190,4 @@ class Module(ModuleBase):
         self.register(CommandExecute(bot))
         self.register(ActiveThreadsCommand(bot))
         self.register(DebugArgsCommand(bot))
+        self.register(PermissionsCommand(bot))

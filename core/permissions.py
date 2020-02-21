@@ -4,6 +4,7 @@ import enum
 # Permission number must be 2^n
 class FuturePermission(enum.Enum):
     OWNER = 1
+    GROUP = 2
 
     @property
     def special_name(self):
