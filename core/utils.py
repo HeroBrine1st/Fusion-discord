@@ -60,7 +60,7 @@ def parse(raw):
     kwargs = DotDict()
     skip = -1
     quote = "\""
-    if ~" ".join(raw).find("'") and " ".join(raw).find("'") < " ".join(raw).find("\""):
+    if " ".join(raw).find("'") < " ".join(raw).find("\""):
         quote = "'"
     if " ".join(raw).count(quote) & 1 == 1:  # Verify that quote count is 2n
         raise ParseError("Unclosed quote")
