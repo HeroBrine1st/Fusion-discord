@@ -40,17 +40,17 @@ def arg_parse(arg):
     return result
 
 
-def parse_quotes(value, raw, quote="\""):
+def parse_quotes(value, raw):
     if len(raw) == 0:
         raise ParseError("Unclosed quote")
     i = 0
     for i, elem in enumerate(raw):
         value += " " + elem
-        if elem.count(quote) == 1 and elem.endswith(quote):
+        if elem.count("\"") == 1 and elem.endswith("\""):
             break
-        elif elem.count(quote) > 0:
+        elif elem.count("\"") > 0:
             raise ParseError("Unclosed quote")
-    if not value.endswith(quote):
+    if not value.endswith("\""):
         raise ParseError("Unclosed quote")
     return i, value
 
@@ -59,10 +59,7 @@ def parse(raw):
     args = []
     kwargs = DotDict()
     skip = -1
-    quote = "\""
-    if " ".join(raw).find("'") < " ".join(raw).find("\""):
-        quote = "'"
-    if " ".join(raw).count(quote) & 1 == 1:  # Verify that quote count is 2n
+    if " ".join(raw).count("\"") & 1 == 1:  # Verify that quote count is 2n
         raise ParseError("Unclosed quote")
     for i, elem in enumerate(raw):
         if i <= skip:
@@ -74,26 +71,26 @@ def parse(raw):
                 res = args_regex.search(elem)
                 key = res.group(1)
                 value = res.group(2)
-                if value.startswith(quote):
-                    if value.count(quote) == 1:
-                        skip_1, parsed = parse_quotes(value, raw[i + 1:], quote=quote)
+                if value.startswith("\""):
+                    if value.count("\"") == 1:
+                        skip_1, parsed = parse_quotes(value, raw[i + 1:])
                         skip = i + skip_1 + 1
                         value = parsed[1:-1]
-                    elif value.endswith(quote):
+                    elif value.endswith("\""):
                         value = value[1:-1]
             kwargs[key] = arg_parse(value)
         elif elem.startswith("-"):
             for char in elem[1:]:
-                if char == "'" or char == "\"":
+                if char == "\"":
                     raise ParseError("Quote can't be in char statement")
                 kwargs[char] = True
         else:
-            if elem.startswith(quote):
-                if elem.count(quote) == 1:
+            if elem.startswith("\""):
+                if elem.count("\"") == 1:
                     skip_1, parsed = parse_quotes(elem, raw[i + 1:])
                     skip = i + skip_1 + 1
                     elem = parsed[1:-1]
-                elif elem.endswith(quote):
+                elif elem.endswith("\""):
                     elem = elem[1:-1]
             args.append(arg_parse(elem))
     return args, kwargs
