@@ -147,6 +147,9 @@ class ProtocolService:
         response.raise_if_error()
         return tuple(response.response)
 
+    def adv_method(self, method, *args):
+        code = "return %s(%s)" % (method,)
+
     def component_method(self, *args) -> Awaitable:
         args = ("component",) + args
         return self.method(self, *args)

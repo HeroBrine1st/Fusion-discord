@@ -76,7 +76,7 @@ while conn
                 "hash": data.hash
             }
         elseif data.request == "execute"
-            func, reason = load data.data, "=protocol"
+            func, reason = load data.data, "=protocol_input"
             if not func
                 response =
                     hash: data.hash
@@ -89,7 +89,9 @@ while conn
                     hash: data.hash
                     response: {table.unpack(results,2,#results)}
                     "error": not results[1]
-                conn_write json_encode response
+                conn_write json_encode response]
+        elseif data.request == "exit"
+            return
         else
             print("<<< " .. json_data\gsub("\n", ""))
             response_data = {process_method(package.loaded, table.unpack(data.request))}
