@@ -119,6 +119,21 @@ class Client:
             return
         clients[self.name] = self
 
+    @property
+    def connected(self) -> bool:
+        return self.remote_socket is not None
+
+    async def execute(self, code):
+        if self.remote_socket is None:
+            raise SocketClosedException()
+        _hash = str(random.randint(0, 2 ** 32 - 1))
+        while _hash in self.requests:
+            _hash = str(random.randint(0, 2 ** 32 - 1))
+        self.remote_socket.send(jsonToBytes({"hash": _hash, "request": "execute", "data": code}))
+        response: RemoteResponse = await self.create_request(_hash)
+        response.raise_if_error()
+        return tuple(response.response)
+
     async def method(self, *args):
         if self.remote_socket is None:
             raise SocketClosedException()
