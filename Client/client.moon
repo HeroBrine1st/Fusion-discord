@@ -88,7 +88,7 @@ while conn
                 response =
                     hash: data.hash
                     response: {table.unpack(results,2,#results)}
-                    "error": not response_data[1]
+                    "error": not results[1]
                 conn_write json_encode response
         else
             print("<<< " .. json_data\gsub("\n", ""))
