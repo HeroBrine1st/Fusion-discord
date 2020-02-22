@@ -1,8 +1,5 @@
 # https://gist.github.com/SegFaultAX/629a3a8c15b0fd188000
 
-SPECIAL_DELIM = [("[{}[".format("=" * n), "]{}]".format("=" * n)) for n in range(10)]
-
-
 def type_of(v, *types):
     return any(isinstance(v, t) for t in types)
 
