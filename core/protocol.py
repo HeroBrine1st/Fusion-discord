@@ -28,9 +28,9 @@ start_event = threading.Event()
 
 class OCInterface:
     args = ()
-    client: 'Client'
+    client: 'ProtocolService'
 
-    def __init__(self, client: 'Client', args=()):
+    def __init__(self, client: 'ProtocolService', args=()):
         self.client = client
         self.args = tuple(args)
 
@@ -77,7 +77,7 @@ class RemoteRequest(asyncio.Event):
         return self.result
 
 
-class Client:
+class ProtocolService:
     requests: Dict[str, RemoteRequest] = {}
     pings: list = []
     listeners: Dict[str, list] = {}
@@ -107,7 +107,9 @@ class Client:
 
     def process_message(self, message: Union[dict, str]):
         if type(message) == str:
-            asyncio.run_coroutine_threadsafe(self.channel.send(message), self.bot_client.loop)
+            embed = self.bot_client.get_embed(title="Говорит клиент %s" % self.name,
+                                              description=message)
+            asyncio.run_coroutine_threadsafe(self.channel.send(embed=embed), self.bot_client.loop)
         elif type(message) == dict:
             embed = self.bot_client.get_embed(title=message["title"], description=message["description"])
             if "color" in message:
@@ -115,9 +117,9 @@ class Client:
             asyncio.run_coroutine_threadsafe(self.channel.send(embed=embed), self.bot_client.loop)
 
     def add(self):
-        if self.name in clients:
+        if self.name in services:
             return
-        clients[self.name] = self
+        services[self.name] = self
 
     @property
     def connected(self) -> bool:
@@ -153,7 +155,8 @@ class Client:
         return OCInterface(self)
 
 
-clients: Dict[str, Client] = dict()  # name: client - позволяет иметь несколько клиентов, подключенных одновременно
+services: Dict[
+    str, ProtocolService] = dict()  # name: service - позволяет иметь несколько клиентов, подключенных одновременно
 
 
 class SocketHandlerThread(threading.Thread):
@@ -162,7 +165,7 @@ class SocketHandlerThread(threading.Thread):
     conn: socket.socket = None
     authorized = False
     name = None
-    client: Client = None
+    client: ProtocolService = None
 
     def __init__(self, conn, addr):
         super().__init__(name="Socket Handler", daemon=True)
@@ -200,10 +203,10 @@ class SocketHandlerThread(threading.Thread):
                 continue
             if self.name is None:
                 if "name" in received_data:
-                    if received_data["name"] in clients:
+                    if received_data["name"] in services:
                         self.logger.info("That client uses service \"%s\"" % received_data["name"])
                         self.name = received_data["name"]
-                        self.client = clients[self.name]
+                        self.client = services[self.name]
                         if self.check_access():
                             break
                         self.conn.send(need_auth)
@@ -254,7 +257,7 @@ class ClientPinger(threading.Thread):
 
     def run(self):
         while True:
-            for client in clients.values():
+            for client in services.values():
                 if client.remote_socket is not None:
                     if len(client.pings) in range(3):
                         hsh = str(random.randint(0, 2 ** 32 - 1))
@@ -266,7 +269,7 @@ class ClientPinger(threading.Thread):
                             client.pings.append(hsh)
                     else:
                         print(client.pings)
-                        self.logger.info("Client %s isn't responding, closing connection.." % client.name)
+                        self.logger.info("ProtocolService %s isn't responding, closing connection.." % client.name)
                         try:
                             client.remote_socket.close()
                             client.remote_socket = None

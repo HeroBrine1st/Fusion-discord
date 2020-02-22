@@ -5,7 +5,7 @@ from core.exceptions import *
 from core.module_manager import ModuleManager
 from core.modulebase import ModuleBase
 from core.permissions import DiscordPermission, FuturePermission
-from core.protocol import Client, clients
+from core.protocol import ProtocolService, services
 from core.utils import DotDict, parse
 from core.event_listener import EventListener, Priority
 
