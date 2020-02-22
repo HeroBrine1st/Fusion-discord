@@ -13,12 +13,6 @@ properties =
 json_encode = (tbl) ->
     return "#{json.encode(tbl)}\n"
 
-conn = internet.socket(properties.remote_address, properties.remote_port)
-
-conn_write = (data) ->
-    conn\write data
-    print(">>> " .. data\gsub("\n", ""))
-
 process_method = (root, ...) ->
     args = {...}
     success, _next = pcall(() -> 
@@ -44,6 +38,7 @@ elem_in = (tbl, elem) ->
             return true
     return false
 
+conn = internet.socket(properties.remote_address, properties.remote_port)
 while conn
     json_data = conn\read!
     continue if json_data == ""
@@ -71,40 +66,29 @@ while conn
             print("Failed")
             break
         elseif data.request == "ping"
-            conn\write json_encode {
-                "ping_response": true,
-                "hash": data.hash
-            }
+            conn\write json_encode response: "ping"
         elseif data.request == "execute"
             func, reason = load data.data, "=protocol_input"
             if not func
                 response =
                     hash: data.hash
-                    response: {reason}
+                    response: "execute"
+                    data: {reason}
                     "error": true
-                conn_write json_encode response
+                conn\write json_encode response
             else
                 results = {pcall(func)}
                 response =
                     hash: data.hash
-                    response: {table.unpack(results,2,#results)}
+                    response: "execute"
+                    data: {table.unpack(results,2,#results)}
                     "error": not results[1]
-                conn_write json_encode response]
+                conn\write json_encode response]
         elseif data.request == "exit"
             return
-        else
-            print("<<< " .. json_data\gsub("\n", ""))
-            response_data = {process_method(package.loaded, table.unpack(data.request))}
-            if not response_data[1]
-            	response_data[2] = debug.traceback(response_data[2])
-            response =
-                hash: data.hash
-                response: {table.unpack(response_data,2,#response_data)}
-                "error": not response_data[1]
-            conn_write json_encode response
     e = {event.pull(0)}
     while #e > 0
         if not elem_in(properties.event_blacklist, e[1])
-            conn_write json_encode {"event": e}
+            conn\write json_encode {"event": e}
         e = {event.pull(0)}
 conn\close!

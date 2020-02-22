@@ -50,7 +50,7 @@ class RemoteResponse:
     has_error: bool
 
     def __init__(self, resp):
-        self.response = resp["response"]
+        self.response = resp["data"]
         self.has_error = True if "error" in resp and resp["error"] else False
 
     def raise_if_error(self):
@@ -226,17 +226,16 @@ class SocketHandlerThread(threading.Thread):
                 else:
                     self.conn.send(need_auth)
                 continue
-            if "ping_response" in received_data and "hash" in received_data:
-                # self.client.pings.remove(received_data["hash"])
-                # self.client.pings = []
-                self.client.pings.clear()
-            elif "message" in received_data:
+            if "message" in received_data:
                 self.logger.debug("Processing message from remote host")
                 self.client.process_message(received_data["message"])
-            elif "response" in received_data and "hash" in received_data \
-                    and received_data["hash"] in self.client.requests:
-                self.logger.debug("Response #%s received" % received_data["hash"])
-                self.client.requests[received_data["hash"]].resolve(received_data)
+            if "response" in received_data:
+                if received_data["response"] == "ping":
+                    self.client.pings.clear()
+                elif received_data["response"] == "execute" and "hash" in received_data \
+                        and received_data["hash"] in self.client.requests:
+                    self.logger.debug("Response #%s received" % received_data["hash"])
+                    self.client.requests[received_data["hash"]].resolve(received_data)
         if self.authorized:
             self.client.process_message({"title": "Сервисные сообщения протокола",
                                          "description": "Клиент %s:%s отключился от сервиса %s." %
