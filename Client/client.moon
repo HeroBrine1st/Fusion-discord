@@ -69,11 +69,27 @@ while conn
             print("Authorized")
         elseif data.authorized == false
             print("Failed")
+            break
         elseif data.request == "ping"
             conn\write json_encode {
                 "ping_response": true,
                 "hash": data.hash
             }
+        elseif data.request == "execute"
+            func, reason = load data.data, "=protocol"
+            if not func
+                response =
+                    hash: data.hash
+                    response: {reason}
+                    "error": true
+                conn_write json_encode response
+            else
+                results = {pcall(func)}
+                response =
+                    hash: data.hash
+                    response: {table.unpack(response_data,2,#response_data)}
+                    "error": not response_data[1]
+                conn_write json_encode response
         else
             print("<<< " .. json_data\gsub("\n", ""))
             response_data = {process_method(package.loaded, table.unpack(data.request))}

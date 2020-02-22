@@ -29,6 +29,7 @@ protocol_services = {
         "AUTH_TOKEN": bot.secure.default_client_token,
         "GUILD_ID": 547876610032926757,
         "CHANNEL_ID": 668454176631554049,
-
     }
 }
+
+group_nicknames = bot.secure.group_nicknames
