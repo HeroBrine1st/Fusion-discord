@@ -34,9 +34,38 @@ class ClientMethodCommand(Command):
         return CommandResult.success
 
 
+class ClientDisconnectCommand(Command):
+    name = "clexit"
+    description = "Отключить удаленный клиент"
+    arguments = "--service=default"
+    future_permissions = {FuturePermission.GROUP}
+
+    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
+        client_name = keys.service or "default"
+        try:
+            client = services[client_name]
+        except KeyError:
+            raise CommandException("Такого сервиса не существует.")
+        client.disconnect()
+        return CommandResult.success
+
+
 class ClientsCommand(Command):
     name = "clients"
     description = "Список клиентов"
+
+    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
+        embed = self.bot.get_info_embed(title="Список клиентов")
+        connected = 0
+
+        for name in services:
+            service = services[name]
+            if service.connected:
+                connected += 1
+            embed.add_field(name=name, value="Подключен" if service.connected else "Отключен")
+        embed.description = "Всего %s, "
+        message.channel.send(embed=embed)
+        return CommandResult.success
 
 
 class Module(ModuleBase):
@@ -47,6 +76,8 @@ class Module(ModuleBase):
     @EventListener
     def on_load(self, bot: Bot):
         self.register(ClientMethodCommand(bot))
+        self.register(ClientDisconnectCommand(bot))
+        self.register(ClientsCommand(bot))
 
     @EventListener(priority=Priority.HIGH)
     async def run(self, bot: Bot):
@@ -58,3 +89,20 @@ class Module(ModuleBase):
                                      channel=guild.get_channel(client_config["CHANNEL_ID"]),
                                      bot_client=bot, name=service_name)
             client.add()
+
+    @EventListener
+    async def on_unload(self):
+        self.logger.info("Soft-closing connections for all clients.")
+        for service_name in services:
+            service = services[service_name]
+            service.disconnect()
+        self.logger.info("Waiting for threads become dead.")
+
+    @EventListener
+    def on_emergency_unload(self):
+        self.logger.info("Closing connections for all clients.")
+        for service_name in services:
+            service = services[service_name]
+            if service.connected:
+                service.remote_socket.close()
+        self.logger.info("Waiting for threads become dead.")

@@ -143,9 +143,9 @@ class ProtocolService:
         code = "return package.loaded.%s(%s)" % (method, ",".join(to_lua(elem) for elem in args))
         return self.execute(code)
 
-    def component_method(self, *args) -> Awaitable:
-        args = ("component",) + args
-        return self.method(self, *args)
+    def disconnect(self):
+        if self.connected:
+            self.remote_socket.send(jsonToBytes({"request": "exit"}))
 
     def get_interface(self) -> OCInterface:
         return OCInterface(self)
@@ -164,7 +164,7 @@ class SocketHandlerThread(threading.Thread):
     client: ProtocolService = None
 
     def __init__(self, conn, addr):
-        super().__init__(name="Socket Handler", daemon=True)
+        super().__init__(name="Socket Handler")
         self.logger = logging.Logger(thread="Socket", app="%s:%s" % addr)
         self.addr = addr
         self.conn = conn

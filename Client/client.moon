@@ -8,8 +8,8 @@ properties =
     name: "ship",
     remote_address: "0.0.0.0",
     remote_port: 0,
-    event_blacklist: {"internet_ready": true, "touch": true, "drag": true, "drop": true, "scroll": true, "redstone_changed": true, 
-                      "key_up": true, "key_down": true, "clipboard": true, "chat_message": true}
+    event_blacklist: {internet_ready: true, touch: true, drag: true, drop: true, scroll: true, redstone_changed: true, 
+                      key_up: true, key_down: true, clipboard: true, chat_message: true}
 
 json_encode = (tbl) ->
     return "#{json.encode(tbl)}\n"
@@ -59,7 +59,7 @@ while conn
                     response: "execute"
                     data: {table.unpack(results,2,#results)}
                     "error": not results[1]
-                conn\write json_encode response]
+                conn\write json_encode response
         elseif data.request == "exit"
             break
     e = {event.pull(0)}
