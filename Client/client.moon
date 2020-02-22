@@ -8,35 +8,11 @@ properties =
     name: "ship",
     remote_address: "0.0.0.0",
     remote_port: 0,
-    event_blacklist: {"internet_ready", "touch", "drag", "drop", "scroll", "redstone_changed", "key_up", "key_down", "clipboard", "chat_message"}
+    event_blacklist: {"internet_ready": true, "touch": true, "drag": true, "drop": true, "scroll": true, "redstone_changed": true, 
+                      "key_up": true, "key_down": true, "clipboard": true, "chat_message": true}
 
 json_encode = (tbl) ->
     return "#{json.encode(tbl)}\n"
-
-process_method = (root, ...) ->
-    args = {...}
-    success, _next = pcall(() -> 
-    	root[table.remove(args,1)]
-    )
-    if not success
-    	return success, _next
-    local process_function
-    if type(_next)  == "function"
-        process_function = pcall
-    elseif type(_next) == "table"
-        if getmetatable(_next) and getmetatable(_next).__call
-            process_function = pcall
-        else
-            process_function = process_method
-    else
-        return nil, "Invalid method"
-    return process_function _next, table.unpack args
- 
-elem_in = (tbl, elem) ->
-    for tblelem in *tbl
-        if tblelem == elem
-            return true
-    return false
 
 conn = internet.socket(properties.remote_address, properties.remote_port)
 while conn
@@ -85,10 +61,10 @@ while conn
                     "error": not results[1]
                 conn\write json_encode response]
         elseif data.request == "exit"
-            return
+            break
     e = {event.pull(0)}
     while #e > 0
-        if not elem_in(properties.event_blacklist, e[1])
+        if not properties.event_blacklist[e[1]]
             conn\write json_encode {"event": e}
         e = {event.pull(0)}
 conn\close!
