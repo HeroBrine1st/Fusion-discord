@@ -87,7 +87,7 @@ while conn
                 results = {pcall(func)}
                 response =
                     hash: data.hash
-                    response: {table.unpack(response_data,2,#response_data)}
+                    response: {table.unpack(results,2,#results)}
                     "error": not response_data[1]
                 conn_write json_encode response
         else
