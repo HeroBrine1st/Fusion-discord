@@ -12,6 +12,7 @@ from core.bot import Bot
 from core import logger as logging
 from bot.settings import listen_port, protocol_encoding, listen_ip
 from core.exceptions import *
+from core.lua_serialization import to_lua
 
 
 def jsonToBytes(json_data):
@@ -27,19 +28,21 @@ start_event = threading.Event()
 
 
 class OCInterface:
-    args = ()
+    method = ()
     client: 'ProtocolService'
 
-    def __init__(self, client: 'ProtocolService', args=()):
+    def __init__(self, client: 'ProtocolService', method=()):
         self.client = client
-        self.args = tuple(args)
+        self.method = method
 
     def __getattr__(self, item):
-        return OCInterface(self.client, args=(self.args + (item,)))
+        return OCInterface(self.client, method=(self.method + (item,)))
 
     def __call__(self, *args, **kwargs) -> Awaitable:
-        oc_args = self.args + args
-        return self.client.method(self.client, *oc_args)
+        oc_args = args
+        if kwargs:
+            oc_args += (kwargs,)
+        return self.client.method(".".join(self.method), oc_args)
 
 
 class RemoteResponse:
@@ -136,19 +139,9 @@ class ProtocolService:
         response.raise_if_error()
         return tuple(response.response)
 
-    async def method(self, *args):
-        if self.remote_socket is None:
-            raise SocketClosedException()
-        _hash = str(random.randint(0, 2 ** 32 - 1))
-        while _hash in self.requests:
-            _hash = str(random.randint(0, 2 ** 32 - 1))
-        self.remote_socket.send(jsonToBytes({"hash": _hash, "request": list(args)}))
-        response: RemoteResponse = await self.create_request(_hash)
-        response.raise_if_error()
-        return tuple(response.response)
-
-    def adv_method(self, method, *args):
-        code = "return %s(%s)" % (method,)
+    def method(self, method, args):
+        code = "return package.loaded.%s(%s)" % (method, ",".join(to_lua(elem) for elem in args))
+        return self.execute(code)
 
     def component_method(self, *args) -> Awaitable:
         args = ("component",) + args
