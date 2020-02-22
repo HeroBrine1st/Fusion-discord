@@ -64,6 +64,7 @@ class RemoteRequest(asyncio.Event):
 
     def __init__(self, cl, hash: str):
         super().__init__()
+        self.create_time = time.time()
         self.client = cl
         self.hash = hash
 
@@ -137,7 +138,7 @@ class ProtocolService:
         self.remote_socket.send(jsonToBytes({"hash": _hash, "request": "execute", "data": code}))
         response: RemoteResponse = await self.create_request(_hash)
         response.raise_if_error()
-        return tuple(response.response)
+        return response.response
 
     def method(self, method, args):
         code = "return package.loaded.%s(%s)" % (method, ",".join(to_lua(elem) for elem in args))
@@ -160,11 +161,11 @@ class SocketHandlerThread(threading.Thread):
     addr = None
     conn: socket.socket = None
     authorized = False
-    name = None
+    service_name = None
     client: ProtocolService = None
 
     def __init__(self, conn, addr):
-        super().__init__(name="Socket Handler")
+        super().__init__(name="Handler")
         self.logger = logging.Logger(thread="Socket", app="%s:%s" % addr)
         self.addr = addr
         self.conn = conn
@@ -197,12 +198,12 @@ class SocketHandlerThread(threading.Thread):
             if type(received_data) != dict:
                 self.conn.send(json_error)
                 continue
-            if self.name is None:
+            if self.service_name is None:
                 if "name" in received_data:
                     if received_data["name"] in services:
                         self.logger.info("That client uses service \"%s\"" % received_data["name"])
-                        self.name = received_data["name"]
-                        self.client = services[self.name]
+                        self.service_name = received_data["name"]
+                        self.client = services[self.service_name]
                         if self.check_access():
                             break
                         self.conn.send(need_auth)
@@ -220,7 +221,7 @@ class SocketHandlerThread(threading.Thread):
                     self.conn.send(jsonToBytes({"authorized": True}))
                     self.client.process_message({"title": "Сервисные сообщения протокола",
                                                  "description": "Клиент %s:%s подключился к сервису %s." %
-                                                                (self.addr[0], self.addr[1], self.name),
+                                                                (self.addr[0], self.addr[1], self.service_name),
                                                  "color": 0x6AAF6A})
                     self.logger.info("Authorized")
                 else:
@@ -234,12 +235,14 @@ class SocketHandlerThread(threading.Thread):
                     self.client.pings.clear()
                 elif received_data["response"] == "execute" and "hash" in received_data \
                         and received_data["hash"] in self.client.requests:
-                    self.logger.debug("Response #%s received" % received_data["hash"])
-                    self.client.requests[received_data["hash"]].resolve(received_data)
+                    req = self.client.requests[received_data["hash"]]
+                    self.logger.debug("Response #%s received (%ss)" % (received_data["hash"],
+                                                                       time.time() - req.create_time))
+                    req.resolve(received_data)
         if self.authorized:
             self.client.process_message({"title": "Сервисные сообщения протокола",
                                          "description": "Клиент %s:%s отключился от сервиса %s." %
-                                                        (self.addr[0], self.addr[1], self.name),
+                                                        (self.addr[0], self.addr[1], self.service_name),
                                          "color": 0x6AAF6A})
             self.client.clean()
         self.conn.close()

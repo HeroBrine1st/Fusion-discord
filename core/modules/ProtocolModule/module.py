@@ -63,8 +63,8 @@ class ClientsCommand(Command):
             if service.connected:
                 connected += 1
             embed.add_field(name=name, value="Подключен" if service.connected else "Отключен")
-        embed.description = "Всего %s, "
-        message.channel.send(embed=embed)
+        embed.description = "Всего %s, подключено %s." % (len(services), connected)
+        await message.channel.send(embed=embed)
         return CommandResult.success
 
 
