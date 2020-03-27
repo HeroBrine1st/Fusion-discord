@@ -3,3 +3,4 @@ start1.py
 __pycache__
 db.sqlite3
 bot/secure.py
+/modules/KgbModule/logger_attachments/

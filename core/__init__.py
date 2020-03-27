@@ -132,7 +132,8 @@ def start():
                 await message.channel.send(embed=embed)
                 await message.add_reaction(emoji_warn)
                 return
-            result = await command.execute(message, args_1, keys)
+            async with message.channel.typing():
+                result = await command.execute(message, args_1, keys)
         except ParseError as e:
             await message.add_reaction(emoji_warn)
             await bot.send_error_embed(message.channel, str(e), "Ошибка разбора аргументов")

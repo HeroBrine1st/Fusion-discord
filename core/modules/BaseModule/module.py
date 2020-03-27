@@ -66,7 +66,7 @@ class SQLCommand(Command):
                 return CommandResult.success
             fields = [field[0] for field in desc]
             results = c.fetchall()
-        tbl = BeautifulTable()
+        tbl = BeautifulTable(max_width=64)
         tbl.column_headers = fields
         for result in results:
             tbl.append_row(result)
@@ -92,18 +92,6 @@ class ActiveThreadsCommand(Command):
             if thread.isAlive():
                 data.append("Alive")
             embed.add_field(name=thread.name, value=", ".join(data))
-        await message.channel.send(embed=embed)
-        return CommandResult.success
-
-
-class DebugArgsCommand(Command):
-    name = "argsdbg"
-    description = "Debug arguments parsing"
-
-    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
-        embed = self.bot.get_info_embed(title="Результаты разбора аргументов")
-        embed.add_field(name="Args", value=args)
-        embed.add_field(name="Kwargs", value=keys)
         await message.channel.send(embed=embed)
         return CommandResult.success
 
@@ -189,5 +177,4 @@ class Module(ModuleBase):
         self.register(SQLCommand(bot))
         self.register(CommandExecute(bot))
         self.register(ActiveThreadsCommand(bot))
-        self.register(DebugArgsCommand(bot))
         self.register(PermissionsCommand(bot))
