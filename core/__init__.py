@@ -107,8 +107,8 @@ def start():
         cmd = args.pop(0)[len(cmd_prefix):].lower()
 
         if cmd not in module_manager.commands:
-            await bot.send_error_embed(message.channel, "Команда \"%s\" не найдена." % cmd,
-                                       "Команда не найдена")
+            # await bot.send_error_embed(message.channel, "Команда \"%s\" не найдена." % cmd,
+            #                            "Команда не найдена")
             return
 
         command = module_manager.commands[cmd]

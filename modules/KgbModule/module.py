@@ -57,26 +57,26 @@ class Module(ModuleBase):
             message_db.attachments.add(attachment_db)
 
     @EventListener(priority=Priority.LOW)
-    async def on_message_edit(self, old_message: discord.Message, new_message: discord.Message, bot: Bot):
+    async def on_message_edit(self, before: discord.Message, after: discord.Message, bot: Bot):
         try:
-            message_db: Message = Message.objects.get(message_id=old_message.id)
+            message_db: Message = Message.objects.get(message_id=before.id)
         except Message.DoesNotExist:
             return
-        message_db.content = new_message.content
+        message_db.content = after.content
         history_db = History()
         history_db.type = 0
-        history_db.time = new_message.edited_at is None and datetime.datetime.now() or new_message.edited_at
+        history_db.time = after.edited_at is None and datetime.datetime.now() or after.edited_at
         history_db.message = message_db
-        history_db.message_id = old_message.id
-        history_db.content = old_message.content
-        history_db.sent = old_message.created_at
-        history_db.guild_id = old_message.guild.id
+        history_db.message_id = before.id
+        history_db.content = before.content
+        history_db.sent = before.created_at
+        history_db.guild_id = before.guild.id
         try:
-            history_db.author = Member.objects.get(id=old_message.author.id)
+            history_db.author = Member.objects.get(id=before.author.id)
         except Member.DoesNotExist:
             author_db = Member()
-            author_db.id = old_message.author.id
-            author_db.nickname = str(old_message.author)
+            author_db.id = before.author.id
+            author_db.nickname = str(before.author)
             author_db.save()
             history_db.author = author_db
         history_db.save()

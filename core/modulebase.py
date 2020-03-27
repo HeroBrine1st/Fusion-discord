@@ -47,7 +47,7 @@ class ModuleBase:
         pass
 
     @EventListener
-    async def on_message_edit(self, old_message: discord.Message, new_message: discord.Message, bot: Bot):
+    async def on_message_edit(self, before: discord.Message, after: discord.Message, bot: Bot):
         pass
 
     @EventListener
