@@ -54,8 +54,7 @@ class Module(ModuleBase):
         message_db.content = after.content
         message_db.save()
         history_db = History(type=0, time=after.edited_at is None and datetime.datetime.now() or after.edited_at,
-                             message=message_db, message_id=before.id, content=before.content,
-                             sent=before.created_at, guild_id=before.guild.id)
+                             message=message_db, content=before.content)
         try:
             history_db.author = Member.objects.get(id=before.author.id)
         except Member.DoesNotExist:
@@ -71,8 +70,7 @@ class Module(ModuleBase):
         except Message.DoesNotExist:
             return
         message_db.state = False
-        history_db = History(type=1, message=message_db, content=message.content, time=datetime.datetime.now(),
-                             sent=message.created_at, guild_id=message.guild.id)
+        history_db = History(type=1, message=message_db, content=message.content, time=datetime.datetime.now())
         try:
             history_db.author = Member.objects.get(id=message.author.id)
         except Member.DoesNotExist:

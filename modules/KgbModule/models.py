@@ -16,7 +16,7 @@ class Attachment(models.Model):
 
 
 class Message(models.Model):
-    message_id = models.IntegerField(blank=True, null=True)
+    message_id = models.IntegerField(primary_key=True)
     guild_id = models.IntegerField(default=0)
     content = models.TextField()
     sent = models.DateTimeField()
@@ -25,7 +25,8 @@ class Message(models.Model):
     state = models.BooleanField(default=True)  # False - deleted
 
 
-class History(Message):
+class History(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE)
     time = models.DateTimeField(default=datetime.datetime.min)
     type = models.SmallIntegerField(default=0)  # 0 - edit, 1 - delete
+    content = models.TextField()
