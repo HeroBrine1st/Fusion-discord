@@ -12,7 +12,7 @@ from .models import SPPermissions
 
 class RestartCommand(Command):
     name = "restart"
-    description = "Stops bot and allow bash script to restart it"
+    description = "Stops bot and allows bash script start again"
     future_permissions = {FuturePermission.OWNER}
 
     async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
