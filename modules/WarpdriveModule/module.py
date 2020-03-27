@@ -1,13 +1,15 @@
 import asyncio
 
 import discord
-from core import ModuleBase, CommandResult, Command, Bot, DotDict, EventListener, services, CommandException
+from core import ModuleBase, CommandResult, Command, Bot, DotDict, EventListener, services, CommandException, \
+    FuturePermission
 
 
 class PingCommand(Command):
     name = "wdping"
     description = "Сканирование радаром WarpDrive"
     arguments = "--service=default"
+    future_permissions = {FuturePermission.GROUP}
 
     async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
         client_name = keys.service or "default"

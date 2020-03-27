@@ -1,5 +1,4 @@
 import datetime
-import os
 
 from django.db import models
 
@@ -17,7 +16,7 @@ class Attachment(models.Model):
 
 
 class Message(models.Model):
-    message_id = models.IntegerField(primary_key=True)
+    message_id = models.IntegerField(blank=True, null=True)
     guild_id = models.IntegerField(default=0)
     content = models.TextField()
     sent = models.DateTimeField()

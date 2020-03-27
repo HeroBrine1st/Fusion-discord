@@ -1,27 +1,16 @@
+import os
+
 import discord
 
-from core import ModuleBase, CommandResult, Command, Bot, DotDict, EventListener, Priority
+from core import ModuleBase, Bot, EventListener, Priority
 from .models import *
 
 module_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-class TemplateCommand(Command):
-    name = "hello"
-    description = "Template command"
-
-    async def execute(self, message: discord.Message, args: list, keys: DotDict) -> CommandResult:
-        await message.channel.send("Hello!")
-        return CommandResult.success
-
-
 class Module(ModuleBase):
     name = "KGB"
     description = "Module KgbModule"
-
-    @EventListener
-    def on_load(self, bot: Bot):
-        self.register(TemplateCommand(bot))
 
     @EventListener
     async def run(self, bot: Bot):
@@ -63,20 +52,14 @@ class Module(ModuleBase):
         except Message.DoesNotExist:
             return
         message_db.content = after.content
-        history_db = History()
-        history_db.type = 0
-        history_db.time = after.edited_at is None and datetime.datetime.now() or after.edited_at
-        history_db.message = message_db
-        history_db.message_id = before.id
-        history_db.content = before.content
-        history_db.sent = before.created_at
-        history_db.guild_id = before.guild.id
+        message_db.save()
+        history_db = History(type=0, time=after.edited_at is None and datetime.datetime.now() or after.edited_at,
+                             message=message_db, message_id=before.id, content=before.content,
+                             sent=before.created_at, guild_id=before.guild.id)
         try:
             history_db.author = Member.objects.get(id=before.author.id)
         except Member.DoesNotExist:
-            author_db = Member()
-            author_db.id = before.author.id
-            author_db.nickname = str(before.author)
+            author_db = Member(id=before.author.id, nickname=str(before.author))
             author_db.save()
             history_db.author = author_db
         history_db.save()
@@ -88,22 +71,13 @@ class Module(ModuleBase):
         except Message.DoesNotExist:
             return
         message_db.state = False
-        history_db = History()
-        history_db.type = 1
-        history_db.message_id = message.id
-        history_db.content = message.content
-        history_db.sent = message.created_at
-        history_db.guild_id = message.guild.id
+        history_db = History(type=1, message=message_db, content=message.content, time=datetime.datetime.now(),
+                             sent=message.created_at, guild_id=message.guild.id)
         try:
             history_db.author = Member.objects.get(id=message.author.id)
         except Member.DoesNotExist:
-            author_db = Member()
-            author_db.id = message.author.id
-            author_db.nickname = str(message.author)
+            author_db = Member(id=message.author.id, nickname=str(message.author))
             author_db.save()
             history_db.author = author_db
         history_db.save()
         message_db.save()
-
-
-
